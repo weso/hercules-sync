@@ -1,10 +1,10 @@
 """ Configuration module for the flask app.
 
 Each class represents a configuration to use by the flask app
-created in hercules_sync/__init__.py
+created in hercules_sync/__init__.py.
 """
 
-class BaseConfig(object):
+class BaseConfig():
     DEBUG = False
     TESTING = False
 
