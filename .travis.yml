@@ -1,0 +1,12 @@
+
+language: python
+python:
+  - "3.6"
+dist: xenial
+install:
+  - pip install --progress-bar off -r requirements.txt
+  - pip install --progress-bar off pytest-cov pytest-faulthandler codecov
+script:
+  - py.test --cov-report=xml --cov=hercules_sync
+after_success:
+  - codecov
