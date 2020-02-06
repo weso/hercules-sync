@@ -4,10 +4,12 @@
 import collections
 import hashlib
 import hmac
+import json
 import six
 
 from flask import abort, request
 
+CONTENT_HEADER = "content-type"
 EVENT_HEADER = "X-Github-Event"
 SIGN_HEADER = "X-Hub-Signature"
 
@@ -19,7 +21,6 @@ class WebHook():
         app.add_url_rule(rule=endpoint, endpoint=endpoint,
                          view_func=self._on_request,
                          methods=['POST'])
-        print(key)
         self._hooks = collections.defaultdict(list)
         self.key = key
 
@@ -41,13 +42,21 @@ class WebHook():
         return digest == signature
 
     def _on_request(self):
-        data = request.data
-        if data is None:
-            abort(400)
-
-        signature = _try_get_header(request, SIGN_HEADER, "")
+        signature = _try_get_header(request, SIGN_HEADER,
+                                    "There is no signature header.")
         if not self._is_signature_valid(signature, request.data):
             abort(400, "Invalid signature")
+
+
+        content_type = _try_get_header(request, CONTENT_HEADER,
+                                       "There is no content header.")
+        if content_type != "application/json":
+            abort(400, "Invalid content format. Only application/json " \
+                  "is supported")
+
+        data = _load_request_data(request)
+        if data is None:
+            abort(400)
 
         event = _try_get_header(request, EVENT_HEADER,
                                 "There was no event received.")
@@ -62,6 +71,13 @@ def _create_secret_gen_from(key, data):
         key = key.encode("utf-8")
 
     return hmac.new(key, data, digestmod=hashlib.sha1)
+
+def _load_request_data(req):
+    data = req.data
+    try:
+        return json.loads(data)
+    except json.JSONDecodeError:
+        abort(400, "There was an error parsing the json data.")
 
 def _try_get_header(req, header, err_msg):
     try:
