@@ -14,7 +14,14 @@ GITHUB_API_URL = 'https://api.github.com'
 
 USER_AGENT = 'weso'
 
-class GitEventHandler():
+class GitPushEventHandler():
+    """ Processes information from a GitHub push event.
+
+    Parameters
+    ----------
+    data : dict
+        Data obtained from a GitHub WebHook regarding a push event.
+    """
 
     def __init__(self, data):
         self.before_commit = data['before']
@@ -29,16 +36,40 @@ class GitEventHandler():
 
     @property
     def added_files(self):
+        """ Files added in the push.
+
+        Returns
+        -------
+        iterable of :obj: `GitFile`
+            Iterable with GitFile objects which contain information
+            about each added file.
+        """
         added_files = self.diff_parser.patch.added_files
         return self._git_loader_iterator(added_files)
 
     @property
     def modified_files(self):
+        """ Files modified in the push.
+
+        Returns
+        -------
+        iterable of :obj: `GitFile`
+            Iterable with GitFile objects which contain information
+            about each modified file.
+        """
         modified_files = self.diff_parser.patch.modified_files
         return self._git_loader_iterator(modified_files)
 
     @property
     def removed_files(self):
+        """ Files modified in the push.
+
+        Returns
+        -------
+        iterable of :obj: `GitFile`
+            Iterable with GitFile objects which contain information
+            about each modified file.
+        """
         removed_files = self.diff_parser.patch.removed_files
         return self._git_loader_iterator(removed_files)
 
@@ -48,6 +79,15 @@ class GitEventHandler():
 
 class GitFile():
     """ Encapsulates the content of a file and the git diff information.
+
+    Parameters
+    ----------
+    patched_file : :obj:`unidiff.PatchFile`
+        PatchFile instance.
+    source_content : str
+        Original content of the file before the push (source).
+    target_content : str
+        Final content of the file after the push (target).
     """
 
     def __init__(self, patched_file, source_content, target_content):
@@ -59,12 +99,30 @@ class GitFile():
     def file_path(self):
         return self._patched_file.path
 
+    @property
     def added_lines(self):
+        """
+
+        Returns
+        -------
+        list of (str, int)
+            List of tuples where each tuple contains the content of the added
+            line and the number of the line in the target file.
+        """
         return [(line.value, line.target_line_no)
                 for hunk in self._patched_file
                 for line in hunk if line.is_added]
 
+    @property
     def removed_lines(self):
+        """
+
+        Returns
+        -------
+        list of (str, int)
+            List of tuples where each tuple contains the content of the removed
+            line and the number of the line in the source file.
+        """
         return [(line.value, line.source_line_no)
                 for hunk in self._patched_file
                 for line in hunk if line.is_removed]
@@ -76,14 +134,34 @@ class GitFile():
 
 
 class GitDiffParser():
+    """ Return Diff information from a repository.
 
-    def __init__(self, repo_name, before_commit, after_commit):
-        self.compare_url = self._build_compare_url(repo_name, before_commit,
+    Parameters
+    ----------
+    repo_full_name : str
+        Full name of the github repository (must follow the
+        form 'user_name/repo_name').
+    before_commit : str
+        Sha of the initial commit before the push.
+    after_ref : str
+        Sha of the final commit after the push.
+    """
+
+    def __init__(self, repo_full_name, before_commit, after_commit):
+        self.compare_url = self._build_compare_url(repo_full_name,
+                                                   before_commit,
                                                    after_commit)
         self.load_diff()
         self._assert_valid_data()
 
     def load_diff(self):
+        """
+
+        Returns
+        -------
+        :obj: `unidiff.PatchSet`
+            PatchSet instance with the diff information.
+        """
         http = urllib3.PoolManager()
         print(self.compare_url)
         req = http.request(
@@ -106,7 +184,19 @@ class GitDiffParser():
         pass
 
 class GitDataLoader():
-    """
+    """ Downloads github files from a commit, before and after a push.
+
+    This class is used to download files from a github repository given a certain
+    original (before_ref) and final commit (after_ref).
+
+    Parameters
+    ----------
+    repo_name : str
+        Full name of the github repository where the files are located.
+    before_ref : str
+        Sha of the initial commit before the push.
+    after_ref : str
+        Sha of the final commit after the push.
     """
 
     def __init__(self, repo_name, before_ref, after_ref):
@@ -115,6 +205,19 @@ class GitDataLoader():
         self.after_ref = after_ref
 
     def load_files(self, files_to_load):
+        """ Downloads the given files, returning them inside GitFile objects.
+
+        Parameters
+        ----------
+        files_to_load : list of :obj:`unidiff.PatchFile`
+            Iterable containing instances of patchfile objects.
+
+        Yields
+        -------
+        :obj:`GitFile`
+            Generator that returns one instance of the GitFile class for each
+            downloaded file from GitHub.
+        """
         http = urllib3.PoolManager()
         return (GitFile(patched_file,
                         self._load_file(patched_file.path, http, self.before_ref),
@@ -122,6 +225,10 @@ class GitDataLoader():
                 for patched_file in files_to_load)
 
     def _load_file(self, file_path, http, ref):
+        # TODO: what happens if the file doesn't exist?
+        # e.g. deleted file wont be available in after_ref, added wont in before_ref
+        # IMO an empty string should be returned
+
         args = urlencode({'ref': ref})
         download_url = '{0}/repos/{1}/contents/{2}?{3}'.format(
             GITHUB_API_URL, self.repo_name, file_path, args)
