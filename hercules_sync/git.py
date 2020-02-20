@@ -1,10 +1,7 @@
-from contextlib import contextmanager
 from urllib.parse import urlencode
 
 import base64
-import io
 import json
-import pdb
 import urllib3
 
 from unidiff import PatchSet
@@ -250,12 +247,9 @@ class GitDataLoader():
                 err_msg = f"Commit {ref} was not found for repository '{self.repo_name}'."
                 raise InvalidCommitError(err_msg)
 
-        try:
-            content = json_response['content']
-            decoded_content = base64.b64decode(content).decode('utf-8')
-            return decoded_content
-        except KeyError:
-            raise
+        content = json_response['content']
+        decoded_content = base64.b64decode(content).decode('utf-8')
+        return decoded_content
 
     def _build_download_url(self, file_path, ref):
         args = urlencode({'ref': ref})

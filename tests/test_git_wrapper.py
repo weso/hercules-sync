@@ -106,6 +106,20 @@ def test_diff_parser_diff_not_found(mocked_diff_parser):
     with pytest.raises(DiffNotFoundError):
         mocked_diff_parser.load_diff()
 
+def test_event_handler_init():
+    data = {
+        'before': '1234',
+        'after': '5678',
+        'repository': {
+            'full_name': 'user_name/repo_name'
+        }
+    }
+    with pytest.raises(DiffNotFoundError):
+        handler = GitPushEventHandler(data)
+        assert handler.before_commit == '1234'
+        assert handler.after_commit == '5678'
+        assert handler.repo_name == 'user_name/repo_name'
+
 def test_gitfile_str(mocked_event_handler):
     test_file = list(mocked_event_handler.added_files)[0]
     str_representation = str(test_file)
