@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 import base64
 import io
 import json
+import pdb
 import urllib3
 
 from unidiff import PatchSet
@@ -30,6 +31,7 @@ class GitPushEventHandler():
         self.diff_parser = GitDiffParser(self.repo_name,
                                          self.before_commit,
                                          self.after_commit)
+        self.diff_parser.load_diff()
         self.data_loader = GitDataLoader(self.repo_name,
                                          self.before_commit,
                                          self.after_commit)
@@ -40,8 +42,8 @@ class GitPushEventHandler():
 
         Returns
         -------
-        iterable of :obj: `GitFile`
-            Iterable with GitFile objects which contain information
+        Generator of :obj: `GitFile`
+            Generator with GitFile objects which contain information
             about each added file.
         """
         added_files = self.diff_parser.patch.added_files
@@ -96,7 +98,7 @@ class GitFile():
         self.target_content = target_content
 
     @property
-    def file_path(self):
+    def path(self):
         return self._patched_file.path
 
     @property
@@ -132,6 +134,14 @@ class GitFile():
                 for hunk in self._patched_file
                 for line in hunk if line_filter(line)]
 
+    def __str__(self):
+        rval = [self.path]
+        rval.append('Added lines: ')
+        rval.append(str(self.added_lines))
+        rval.append('Removed lines: ')
+        rval.append(str(self.removed_lines))
+        return '\n'.join(rval)
+
 
 class GitDiffParser():
     """ Return Diff information from a repository.
@@ -151,8 +161,7 @@ class GitDiffParser():
         self.compare_url = self._build_compare_url(repo_full_name,
                                                    before_commit,
                                                    after_commit)
-        self.load_diff()
-        self._assert_valid_data()
+        self.patch = None
 
     def load_diff(self):
         """
@@ -162,26 +171,26 @@ class GitDiffParser():
         :obj: `unidiff.PatchSet`
             PatchSet instance with the diff information.
         """
+        req = self._send_request()
+        if req.status == 404:
+            raise DiffNotFoundError()
+
+        diff = req.data.decode("utf-8")
+        self.patch = PatchSet(diff)
+
+    def _build_compare_url(self, repo_name, before_commit, after_commit):
+        return '{0}/{1}/compare/{2}...{3}.diff'.format(GITHUB_BASE_URL, repo_name,
+                                                       before_commit, after_commit)
+
+    def _send_request(self):
         http = urllib3.PoolManager()
-        print(self.compare_url)
-        req = http.request(
+        return http.request(
             'GET',
             self.compare_url,
             headers={
                 'User-Agent': USER_AGENT
             }
         )
-        # TODO: parse response status
-        diff = req.data.decode("utf-8")
-        self.patch = PatchSet(diff)
-
-    def _build_compare_url(self, repo_name, before_commit, after_commit):
-        return '{0}/{1}/{2}/{3}...{4}.diff'.format(GITHUB_BASE_URL, repo_name, 'compare',
-                                                   before_commit, after_commit)
-
-    def _assert_valid_data(self):
-        # TODO
-        pass
 
 class GitDataLoader():
     """ Downloads github files from a commit, before and after a push.
@@ -198,6 +207,9 @@ class GitDataLoader():
     after_ref : str
         Sha of the final commit after the push.
     """
+
+    NO_COMMIT_MSG = "No commit found for the ref"
+    NOT_FOUND_MSG = "Not Found"
 
     def __init__(self, repo_name, before_ref, after_ref):
         self.repo_name = repo_name
@@ -225,21 +237,46 @@ class GitDataLoader():
                 for patched_file in files_to_load)
 
     def _load_file(self, file_path, http, ref):
-        # TODO: what happens if the file doesn't exist?
-        # e.g. deleted file wont be available in after_ref, added wont in before_ref
-        # IMO an empty string should be returned
+        download_url = self._build_download_url(file_path, ref)
 
+        req = self._send_request(http, download_url)
+        json_response = json.loads(req.data.decode('utf-8'))
+
+        if 'message' in json_response:
+            message = json_response['message']
+            if GitDataLoader.NOT_FOUND_MSG in message:
+                return ''
+            if GitDataLoader.NO_COMMIT_MSG in message:
+                err_msg = f"Commit {ref} was not found for repository '{self.repo_name}'."
+                raise InvalidCommitError(err_msg)
+
+        try:
+            content = json_response['content']
+            decoded_content = base64.b64decode(content).decode('utf-8')
+            return decoded_content
+        except KeyError:
+            raise
+
+    def _build_download_url(self, file_path, ref):
         args = urlencode({'ref': ref})
-        download_url = '{0}/repos/{1}/contents/{2}?{3}'.format(
+        return '{0}/repos/{1}/contents/{2}?{3}'.format(
             GITHUB_API_URL, self.repo_name, file_path, args)
-        req = http.request(
+
+    def _send_request(self, http, url):
+        return http.request(
             'GET',
-            download_url,
+            url,
             headers={
                 'User-Agent': USER_AGENT
             }
         )
 
-        content = json.loads(req.data.decode('utf-8'))['content']
-        decoded_content = base64.b64decode(content).decode('utf-8')
-        return decoded_content
+class DiffNotFoundError(Exception):
+    """
+    """
+    pass
+
+class InvalidCommitError(Exception):
+    """
+    """
+    pass
