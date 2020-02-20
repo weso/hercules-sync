@@ -39,7 +39,7 @@ def mocked_diff_parser():
 def mocked_data_loader():
     data_loader = GitDataLoader('', SOURCE_DIR, TARGET_DIR)
     data_loader._build_download_url = lambda file_path, ref: os.path.join(ref, file_path)
-    data_loader._send_request = lambda http, url: fake_load_file(url)
+    data_loader._send_request = lambda url: fake_load_file(url)
     return data_loader
 
 @pytest.fixture
@@ -79,7 +79,7 @@ def test_data_loader_invalid_commit(mocked_event_handler):
     response.data = json.dumps({
         "message": 'No commit found for the ref {}'.format(bef_ref)
     }).encode('utf-8')
-    data_loader._send_request = lambda http, url: response
+    data_loader._send_request = lambda url: response
     mocked_event_handler.data_loader = data_loader
     with pytest.raises(InvalidCommitError) as err:
         _ = list(mocked_event_handler.added_files)
@@ -91,8 +91,8 @@ def test_data_loader_invalid_file():
     response.data = json.dumps({
         "message": 'Not Found'
     }).encode('utf-8')
-    loader._send_request = lambda http, url: response
-    assert loader._load_file('invented_file.txt', mock.Mock(), '4567') == ''
+    loader._send_request = lambda url: response
+    assert loader._load_file('invented_file.txt', '4567') == ''
 
 def test_diff_parser_build_url():
     diff_parser = GitDiffParser('user_name/repo_name', '1234', '5678')

@@ -212,6 +212,7 @@ class GitDataLoader():
         self.repo_name = repo_name
         self.before_ref = before_ref
         self.after_ref = after_ref
+        self.http = urllib3.PoolManager()
 
     def load_files(self, files_to_load):
         """ Downloads the given files, returning them inside GitFile objects.
@@ -227,16 +228,15 @@ class GitDataLoader():
             Generator that returns one instance of the GitFile class for each
             downloaded file from GitHub.
         """
-        http = urllib3.PoolManager()
         return (GitFile(patched_file,
-                        self._load_file(patched_file.path, http, self.before_ref),
-                        self._load_file(patched_file.path, http, self.after_ref))
+                        self._load_file(patched_file.path, self.before_ref),
+                        self._load_file(patched_file.path, self.after_ref))
                 for patched_file in files_to_load)
 
-    def _load_file(self, file_path, http, ref):
+    def _load_file(self, file_path, ref):
         download_url = self._build_download_url(file_path, ref)
 
-        req = self._send_request(http, download_url)
+        req = self._send_request(download_url)
         json_response = json.loads(req.data.decode('utf-8'))
 
         if 'message' in json_response:
@@ -256,8 +256,8 @@ class GitDataLoader():
         return '{0}/repos/{1}/contents/{2}?{3}'.format(
             GITHUB_API_URL, self.repo_name, file_path, args)
 
-    def _send_request(self, http, url):
-        return http.request(
+    def _send_request(self, url):
+        return self.http.request(
             'GET',
             url,
             headers={
@@ -266,11 +266,7 @@ class GitDataLoader():
         )
 
 class DiffNotFoundError(Exception):
-    """
-    """
-    pass
+    """ Exception subclass used when a diff file cannot be found from the server """
 
 class InvalidCommitError(Exception):
-    """
-    """
-    pass
+    """ Exception subclass that represents the use of an invalid commit when loading a file """
