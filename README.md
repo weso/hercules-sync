@@ -27,3 +27,8 @@
 </table>
 
 Tools to synchronise data between the ontology files and Wikibase instance for the Hercules project at University of Murcia. 
+
+## Directory structure
+* docs: Development documentation of this module.
+* hercules_sync: Source code of the application.
+* tests: Test suite used to validate the project.
