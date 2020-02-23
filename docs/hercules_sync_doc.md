@@ -1,8 +1,7 @@
 # Documentación del módulo hercules-sync
 
+## Tabla de contenido
 <!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:0 orderedList:1 -->
-
-## Tabla de contenido
 
 1. [Introducción](#introducción)
 2. [Alcance](#alcance)
@@ -42,7 +41,7 @@ El módulo _hercules\_sync_ se encarga de recibir actualizaciones de las ontolog
 ## Requisitos
 A continuación se indican los requisitos de alto nivel identificados en la toma de requisitos del sistema. Éstos se encuentran divididos en requisitos funcionales y no funcionales:
 
-### Requisitos funcionales
+### Requisitos funcionales
 | Código        | Descripción          |
 |:-------------:|:-------------|
 | RF1      | El sistema establecerá un punto de entrada por el cuál recibir información sobre las actualizaciones de las ontologías. |
@@ -117,7 +116,7 @@ En esta sección vamos a mostrar el diseño de clases del módulo. Para facilita
 * SyncOperation: Clase abstracta que representa una operación a realizar en el triple-store.
 
 <p align="center">
-  <img src="images/herc_sync_ontologies_synchronizer_classes.png" width=600>
+  <img src="images/herc_sync_ontologies_synchronizer_classes.png">
 </p>
 
 #### Componente triplestore_manager
@@ -138,7 +137,7 @@ En cuanto a la documentación del código también hay una serie de estilos que 
 
 ### Tecnologías utilizadas
 
-#### Python
+#### Python
 El principal lenguaje de programación utilizado para la implementación del módulo _hercules\_sync_ es [Python](https://www.python.org). Python es un lenguaje de propósito general, interpretado y de alto nivel diseñado por Guido van Rossum en 1991. Las principales características de Python son su sintaxis legible y el tipado dinámico.
 
 La elección de Python para este módulo se debe principalmente al amplio abanico de librerías existentes que permiten trabajar con ontologías y triple stores en comparación con otros lenguajes.
