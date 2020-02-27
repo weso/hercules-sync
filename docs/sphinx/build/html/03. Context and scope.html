@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>System Scope and Context &#8212; documentación de hercules_sync - </title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="_static/translations.js"></script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="system-scope-and-context">
+<h1>System Scope and Context<a class="headerlink" href="#system-scope-and-context" title="Enlazar permanentemente con este título">¶</a></h1>
+<p><strong>Contents.</strong></p>
+<p>System scope and context - as the name suggests - delimits your system
+(i.e. your scope) from all its communication partners (neighboring
+systems and users, i.e. the context of your system). It thereby
+specifies the external interfaces.</p>
+<p>If necessary, differentiate the business context (domain specific inputs
+and outputs) from the technical context (channels, protocols, hardware).</p>
+<p><strong>Motivation.</strong></p>
+<p>The domain interfaces and technical interfaces to communication partners
+are among your system’s most critical aspects. Make sure that you
+completely understand them.</p>
+<p><strong>Form.</strong></p>
+<p>Various options:</p>
+<ul class="simple">
+<li><p>Context diagrams</p></li>
+<li><p>Lists of communication partners and their interfaces.</p></li>
+</ul>
+<div class="section" id="business-context">
+<h2>Business Context<a class="headerlink" href="#business-context" title="Enlazar permanentemente con este título">¶</a></h2>
+<p><strong>Contents.</strong></p>
+<p>Specification of <strong>all</strong> communication partners (users, IT-systems, …)
+with explanations of domain specific inputs and outputs or interfaces.
+Optionally you can add domain specific formats or communication
+protocols.</p>
+<p><strong>Motivation.</strong></p>
+<p>All stakeholders should understand which data are exchanged with the
+environment of the system.</p>
+<p><strong>Form.</strong></p>
+<p>All kinds of diagrams that show the system as a black box and specify
+the domain interfaces to communication partners.</p>
+<p>Alternatively (or additionally) you can use a table. The title of the
+table is the name of your system, the three columns contain the name of
+the communication partner, the inputs, and the outputs.</p>
+<p><strong>&lt;Diagram or Table&gt;</strong></p>
+<p><strong>&lt;optionally: Explanation of external domain interfaces&gt;</strong></p>
+</div>
+<div class="section" id="technical-context">
+<h2>Technical Context<a class="headerlink" href="#technical-context" title="Enlazar permanentemente con este título">¶</a></h2>
+<p><strong>Contents.</strong></p>
+<p>Technical interfaces (channels and transmission media) linking your
+system to its environment. In addition a mapping of domain specific
+input/output to the channels, i.e. an explanation with I/O uses which
+channel.</p>
+<p><strong>Motivation.</strong></p>
+<p>Many stakeholders make architectural decision based on the technical
+interfaces between the system and its context. Especially infrastructure
+or hardware designers decide these technical interfaces.</p>
+<p><strong>Form.</strong></p>
+<p>E.g. UML deployment diagram describing channels to neighboring systems,
+together with a mapping table showing the relationships between channels
+and input/output.</p>
+<p><strong>&lt;Diagram or Table&gt;</strong></p>
+<p><strong>&lt;optionally: Explanation of technical interfaces&gt;</strong></p>
+<p><strong>&lt;Mapping Input/Output to Channels&gt;</strong></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">hercules_sync</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navegación</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hercules_sync_doc.html">Documentación del módulo hercules-sync</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Búsqueda rápida</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Ir a" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Web Semantics Oviedo.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/03. Context and scope.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

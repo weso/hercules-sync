@@ -1,0 +1,489 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="es" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="es" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Documentación del módulo hercules-sync &mdash; documentación de hercules_sync - </title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script src="_static/translations.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="next" title="Documentación del módulo herc_sync" href="Arc42 Template in Markdown.html" />
+    <link rel="prev" title="Welcome to hercules_sync’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> hercules_sync
+          
+
+          
+            
+            <img src="_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Documentación del módulo hercules-sync</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tabla-de-contenido">Tabla de contenido</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#introduccion">Introducción</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#alcance">Alcance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#requisitos">Requisitos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requisitos-funcionales">Requisitos funcionales</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#requisitos-no-funcionales">Requisitos no funcionales</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#diseno">Diseño</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#diagrama-de-componentes">Diagrama de componentes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#diseno-de-clases">Diseño de clases</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#componente-diff-parser">Componente diff_parser</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#componente-ontologies-synchronizer">Componente ontologies_synchronizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#componente-triplestore-manager">Componente triplestore_manager</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#implementacion">Implementación</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#guias-de-estilo">Guías de estilo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tecnologias-utilizadas">Tecnologías utilizadas</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#python">Python</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#flask">Flask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wikidataintegrator">WikidataIntegrator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pytest">Pytest</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#travis">Travis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#codacy">Codacy</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#anexos">Anexos</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#a-pruebas">A. Pruebas</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#a-1-fase-de-diseno">A.1. Fase de diseño</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#a-2-fase-de-implementacion">A.2. Fase de implementación</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#b-integracion-continua">B. Integración continua</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Arc42 Template in Markdown.html">Documentación del módulo herc_sync</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">hercules_sync</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Documentación del módulo hercules-sync</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/hercules_sync_doc.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="documentacion-del-modulo-hercules-sync">
+<h1>Documentación del módulo hercules-sync<a class="headerlink" href="#documentacion-del-modulo-hercules-sync" title="Enlazar permanentemente con este título">¶</a></h1>
+<div class="section" id="tabla-de-contenido">
+<h2>Tabla de contenido<a class="headerlink" href="#tabla-de-contenido" title="Enlazar permanentemente con este título">¶</a></h2>
+<!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:0 orderedList:1 --><ol class="simple">
+<li><p><a class="reference external" href="#introducci%C3%B3n">Introducción</a></p></li>
+<li><p><a class="reference external" href="#alcance">Alcance</a></p></li>
+<li><p><a class="reference external" href="#requisitos">Requisitos</a></p>
+<ol class="simple">
+<li><p><a class="reference external" href="#requisitos-funcionales">Requisitos funcionales</a></p></li>
+<li><p><a class="reference external" href="#requisitos-no-funcionales">Requisitos no funcionales</a></p></li>
+</ol>
+</li>
+<li><p><a class="reference external" href="#dise%C3%B1o">Diseño</a></p>
+<ol class="simple">
+<li><p><a class="reference external" href="#diagrama-de-componentes">Diagrama de componentes</a></p></li>
+<li><p><a class="reference external" href="#dise%C3%B1o-de-clases">Diseño de clases</a></p>
+<ol class="simple">
+<li><p><a class="reference external" href="#componente-listener">Componente listener</a></p></li>
+<li><p><a class="reference external" href="#componente-diffparser">Componente diff_parser</a></p></li>
+<li><p><a class="reference external" href="#componente-ontologiessynchronizer">Componente ontologies_synchronizer</a></p></li>
+<li><p><a class="reference external" href="#componente-triplestoremanager">Componente triplestore_manager</a></p></li>
+</ol>
+</li>
+</ol>
+</li>
+<li><p><a class="reference external" href="#implementaci%C3%B3n">Implementación</a></p>
+<ol class="simple">
+<li><p><a class="reference external" href="#gu%C3%ADas-de-estilo">Guías de estilo</a></p></li>
+<li><p><a class="reference external" href="#tecnolog%C3%ADas-utilizadas">Tecnologías utilizadas</a></p>
+<ol class="simple">
+<li><p><a class="reference external" href="#python">Python</a></p></li>
+<li><p><a class="reference external" href="#flask">Flask</a></p></li>
+<li><p><a class="reference external" href="#wikidataintegrator">WikidataIntegrator</a></p></li>
+<li><p><a class="reference external" href="#pytest">Pytest</a></p></li>
+<li><p><a class="reference external" href="#travis">Travis</a></p></li>
+<li><p><a class="reference external" href="#codacy">Codacy</a></p></li>
+</ol>
+</li>
+</ol>
+</li>
+<li><p><a class="reference external" href="#anexos">Anexos</a></p>
+<ol class="simple">
+<li><p><a class="reference external" href="#a-pruebas">A. Pruebas</a></p>
+<ol class="simple">
+<li><p><a class="reference external" href="#a1-fase-de-dise%C3%B1o">A.1. Fase de diseño</a></p></li>
+<li><p><a class="reference external" href="#a2-fase-de-implementaci%C3%B3n">A.2. Fase de implementación</a></p></li>
+</ol>
+</li>
+<li><p><a class="reference external" href="#b-integraci%C3%B3n-continua">B. Integración continua</a></p></li>
+</ol>
+</li>
+</ol>
+<!-- /TOC --></div>
+<div class="section" id="introduccion">
+<h2>Introducción<a class="headerlink" href="#introduccion" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>En este documento se presenta la documentación del módulo de sincronización - llamado a partir de ahora <em>hercules_sync</em> - entre ficheros de ontologías y un Triple-store, que forma parte de la Infraestructura Ontológica del proyecto Hércules.</p>
+</div>
+<div class="section" id="alcance">
+<h2>Alcance<a class="headerlink" href="#alcance" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>El módulo <em>hercules_sync</em> se encarga de recibir actualizaciones de las ontologías y shapes que se encuentran almacenadas en un sistema de control de versiones. Cuando recibe una actualización, deberá procesar los cambios que se han realizado en las ontologías y/o shapes y reflejar estos cambios en el triple store en el que se encuentren almacenadas.</p>
+</div>
+<div class="section" id="requisitos">
+<h2>Requisitos<a class="headerlink" href="#requisitos" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>A continuación se indican los requisitos de alto nivel identificados en la toma de requisitos del sistema. Éstos se encuentran divididos en requisitos funcionales y no funcionales:</p>
+<div class="section" id="requisitos-funcionales">
+<h3>Requisitos funcionales<a class="headerlink" href="#requisitos-funcionales" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>| Código        | Descripción          |
+|:————-:|:————-|
+| RF1      | El sistema establecerá un punto de entrada por el cuál recibir información sobre las actualizaciones de las ontologías. |
+| RF2 | El sistema procesará la información recibida del CVS relativa a la actualización de las ontologías. |
+| RF3 | El sistema detectará los cambios a realizar en el triple-store a partir de la información sobre las actualizaciones procesada.  |
+| RF4 | El sistema se conectará con un triple-store para reflejar los cambios producidos en las ontologías. |
+| RF5 | El sistema llevará a cambio la sincronización inversa: de cambios producidos en el triple-store a los ficheros con las ontologías. |
+| RF6 | El sistema utilizará herramientas de logging para detectar anomalías en su funcionamiento. |</p>
+</div>
+<div class="section" id="requisitos-no-funcionales">
+<h3>Requisitos no funcionales<a class="headerlink" href="#requisitos-no-funcionales" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>| Código        | Descripción          |
+|:————-:|:————-|
+| RNF1      | Seguridad: El sistema recibirá notificaciones de actualización del CVS de forma segura utilizando claves RSA. |
+| RNF2      | Seguridad: El sistema actualizará el triple-store de forma segura a través del protocolo OAuth. |
+| RNF3 | Compatibilidad: El sistema deberá funcionar como mínimo con las versiones 3.6, 3.7 y 3.8 del lenguaje de programación Python. |
+| RNF4 | Mantenibilidad: La implementación del sistema seguirá el estándar de código PEP8. |
+| RNF5 | Calidad: La cobertura de código de cada nueva versión será de al menos un 90%. |
+| RNF6 | Extensibilidad: El sistema facilitará la utilización de distintos triple-stores donde almacenar las ontologías. |</p>
+</div>
+</div>
+<div class="section" id="diseno">
+<h2>Diseño<a class="headerlink" href="#diseno" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>En este apartado se especifica el diseño del módulo <em>hercules_sync</em>. En primer lugar, se adjunta el diagrama de componentes del módulo, junto con una explicación de las responsabilidades de cada componente e interfaz que proporciona. A continuación, introducimos el diseño de las clases de cada componente a más bajo nivel, de nuevo acompañadas de explicaciones del funcionamiento de cada clase del sistema.</p>
+<div class="section" id="diagrama-de-componentes">
+<h3>Diagrama de componentes<a class="headerlink" href="#diagrama-de-componentes" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>Los componentes e interfaces detectados son los siguientes:</p>
+<ul class="simple">
+<li><p>listener: Este componente es el punto de entrada al subsistema por parte de otros sistemas externos. Para ello ofrece una interfaz al exterior, llamada OnWebhook, que es la encargada de recibir los datos sobre las actualizaciones de las ontologías por parte del CVS.</p></li>
+<li><p>ontology_synchronizer: Este componente realiza la sincronización de los cambios recibidos, creando operaciones a realizar en el triple_store para reflejar estos cambios. Ofrece una interfaz llamada <em>SynchronizeOntologies</em>, que es utilizada por el componente listener para sincronizar los cambios recibidos.</p></li>
+<li><p>diff_parser: El componente <em>diff_parser</em> se encarga de procesar la información del diff de los ficheros típica de los sistemas de control de versiones basados en Git. Ofrece una interfaz <em>ParseDiff</em>, que es utilizada por el componente <em>ontology_synchronizer</em> para obtener información detallada sobre los cambios en los ficheros de ontologías.</p></li>
+<li><p>triplestore_manager: Por último, el componente <em>triplestore_manager</em> se encarga de ejecutar las operaciones recibidas del componente <em>ontology_synchronizer</em> sobre el triple-store elegido. Para ello ofrece el interfaz <em>ExecuteModification</em>.</p></li>
+</ul>
+<p>A continuación se muestra el diagrama de componentes del módulo:</p>
+<p><img alt="_images/herc_sync_components.png" src="_images/herc_sync_components.png" /></p>
+</div>
+<div class="section" id="diseno-de-clases">
+<h3>Diseño de clases<a class="headerlink" href="#diseno-de-clases" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>En esta sección vamos a mostrar el diseño de clases del módulo. Para facilitar la comprensión y lectura de las clases las hemos dividido en subsecciones correspondientes a cada uno de los componentes detectados en el apartado previo.</p>
+<blockquote>
+<div><p><strong>Singularidades de Python</strong>. <br>
+Dado que Python es un lenguaje dinámicamente tipado que carece de algunas de las herramientas de otros lenguajes de programación, como las interfaces, haremos las siguientes distinciones en los diagramas UML:</p>
+<ul class="simple">
+<li><p>Los módulos de Python que estén compuestos únicamente por funciones, y no tengan ninguna clase en su interior, serán tratados como clases estáticas en los diagramas UML.</p></li>
+<li><p>Dado que los modificadores de acceso no se encuentran disponibles en Python, seguimos la convención de que los atributos y funciones cuyo nombre comienza con guión bajo son considerados privados. Estos elementos se mostrarán como privados en los diagramas UML.</p></li>
+<li><p>Como no hay interfaces en Python, representaremos como interfaces aquellas clases abstractas que no tengan ningún atributo o implementación de algún método.</p></li>
+</ul>
+<p>Además, es importante destacar que la filosofía de Python se basa en el Duck typing y no en la implementación de interfaces. Sin embargo, se ha optado por la creación de «pseudo-interfaces» (clases abstractas sin atributos ni métodos implementados) y su extensión por otras clases. Esto se hizo con el fin de especificar explícitamente que una clase sigue una determinada interfaz, en vez de comprobarlo implícitamente al mirar los métodos que la clase provee internamente.</p>
+</div></blockquote>
+<p>#### Componente listener</p>
+<ul class="simple">
+<li><p>Listener: La clase Listener inicializa el servidor de Flask a través de la AppFactory, y establece el punto de entrada a través del cual llega la información sobre las actualizaciones de las ontologías.</p></li>
+<li><p>Webhook: Esta clase gestiona la comunicación con el sistema de control de versiones a través de Webhooks (ver https://developer.github.com/webhooks/) de forma segura con el uso de claves RSA.</p></li>
+<li><p>AppFactory: Factoría encargada de crear la aplicación de Flask a partir de una configuración específica.</p></li>
+<li><p>Config: Clase de configuración utilizada por el servidor.</p></li>
+</ul>
+<p align="center">
+  <img src="images/herc_sync_listener_classes.png" width=500>
+</p><div class="section" id="componente-diff-parser">
+<h4>Componente diff_parser<a class="headerlink" href="#componente-diff-parser" title="Enlazar permanentemente con este título">¶</a></h4>
+<ul class="simple">
+<li><p>PushEventHandler: Clase principal con la que se comunicará el listener para procesar la información recibida sobre los cambios producidos en las ontologías.</p></li>
+<li><p>PushInfo: Información sobre los datos recibidos por el sistema de control de versiones.</p></li>
+<li><p>GitDiffParser: Esta clase se encarga de parsear el diff de los cambios para devolver las líneas que han sido modificadas en cada fichero.</p></li>
+<li><p>GitDataLoader: La clase GitDataLoader descarga los datos de cada fichero antes y después de las modificaciones realizadas.</p></li>
+<li><p>GitFile: Wrapper que almacena el contenido de un fichero modificado antes y después de la modificación, así como otra metainformación del fichero.</p></li>
+</ul>
+<p align="center">
+  <img src="images/herc_sync_diff_parser_classes.png" width=600>
+</p></div>
+<div class="section" id="componente-ontologies-synchronizer">
+<h4>Componente ontologies_synchronizer<a class="headerlink" href="#componente-ontologies-synchronizer" title="Enlazar permanentemente con este título">¶</a></h4>
+<ul class="simple">
+<li><p>OntologySynchronizer: Esta clase recibe un algoritmo de sincronización a utilizar y devuelve una lista de operaciones a realizar en el triple-store para reflejar los cambios existentes en los ficheros de ontologías.</p></li>
+<li><p>SyncAlgorithm: Interfaz a implementar por cada uno de los algoritmos de sincronización. Estos algoritmos reciben las líneas modificadas en cada fichero y devuelven la lista de operaciones a realizar.</p></li>
+<li><p>NaiveSync: Algoritmo de sincronización simple que sobrescribe el contenido del triple-store para que sea consistente con los ficheros de ontologías.</p></li>
+<li><p>RDFSync: Algoritmo <a class="reference external" href="https://link.springer.com/content/pdf/10.1007%2F978-3-540-76298-0_39.pdf">RDFSync</a> para la sincronización de ficheros RDF.</p></li>
+<li><p>SyncOperation: Clase abstracta que representa una operación a realizar en el triple-store.</p></li>
+</ul>
+<p align="center">
+  <img src="images/herc_sync_ontologies_synchronizer_classes.png">
+</p></div>
+<div class="section" id="componente-triplestore-manager">
+<h4>Componente triplestore_manager<a class="headerlink" href="#componente-triplestore-manager" title="Enlazar permanentemente con este título">¶</a></h4>
+<ul class="simple">
+<li><p>TripleStoreManager: Interfaz a ser implementada por cada uno de los adaptadores que se conecten con un triple-store particular.</p></li>
+<li><p>WikibaseAdapter: Adaptador para conectarse con el triple-store BlazeGraph configurado en una instancia de wikibase.</p></li>
+<li><p>ModificationResult: Clase que encapsula el resultado de la modificación realizada en el triple-store.</p></li>
+</ul>
+<p align="center">
+  <img src="images/herc_sync_triplestore_manager_classes.png" width=500>
+</p></div>
+</div>
+</div>
+<div class="section" id="implementacion">
+<h2>Implementación<a class="headerlink" href="#implementacion" title="Enlazar permanentemente con este título">¶</a></h2>
+<div class="section" id="guias-de-estilo">
+<h3>Guías de estilo<a class="headerlink" href="#guias-de-estilo" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>El principal estándar de código seguido para la implementación de módulo es la guía de estilo <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP 8</a> de Python. Este estándar especifica cómo se debería formatear (número de caracteres por linea, decisiones de estilo…) todo el código escrito en el lenguaje de programación Python, y está ampliamente adoptado por la comunidad del lenguaje.</p>
+<p>En cuanto a la documentación del código también hay una serie de estilos que pueden ser usados. En este caso hemos optado por utilizar el <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">numpy docstring style</a>, debido a la facilidad de lectura que proporciona frente a otras alternativas.</p>
+</div>
+<div class="section" id="tecnologias-utilizadas">
+<h3>Tecnologías utilizadas<a class="headerlink" href="#tecnologias-utilizadas" title="Enlazar permanentemente con este título">¶</a></h3>
+<div class="section" id="python">
+<h4>Python<a class="headerlink" href="#python" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>El principal lenguaje de programación utilizado para la implementación del módulo <em>hercules_sync</em> es <a class="reference external" href="https://www.python.org">Python</a>. Python es un lenguaje de propósito general, interpretado y de alto nivel diseñado por Guido van Rossum en 1991. Las principales características de Python son su sintaxis legible y el tipado dinámico.</p>
+<p>La elección de Python para este módulo se debe principalmente al amplio abanico de librerías existentes que permiten trabajar con ontologías y triple stores en comparación con otros lenguajes.</p>
+<p>El módulo será compatible exclusivamente con Python 3. El 1 de Enero de 2020 se anunció el fin de ciclo de Python 2, siendo Python 3 la versión mantenida actualmente.</p>
+</div>
+<div class="section" id="flask">
+<h4>Flask<a class="headerlink" href="#flask" title="Enlazar permanentemente con este título">¶</a></h4>
+<p><a class="reference external" href="https://palletsprojects.com/p/flask/">Flask</a> es un microframework web basado en el estándar <a class="reference external" href="https://wsgi.readthedocs.io/en/latest/">WSGI</a> que destaca por su flexibilidad y eficiencia.</p>
+<p>Flask será utilizado en <em>hercules_sync</em> para lanzar un servidor web que escuche a las actualizaciones de las ontologías por parte del sistema de control de versiones.</p>
+</div>
+<div class="section" id="wikidataintegrator">
+<h4>WikidataIntegrator<a class="headerlink" href="#wikidataintegrator" title="Enlazar permanentemente con este título">¶</a></h4>
+<p><a class="reference external" href="https://github.com/SuLab/WikidataIntegrator">WikidataIntegrator</a> es una librería que permite introducir y leer datos sobre entidades en una instancia de Wikibase a través de la API de <a class="reference external" href="https://www.mediawiki.org/wiki/API:Main_page">MediaWiki</a>.</p>
+<p>Esta librería es utilizada para introducir las modificaciones que se hayan producido en las ontologías en la instancia de Wikibase donde se encuentra el triple-store.</p>
+</div>
+<div class="section" id="pytest">
+<h4>Pytest<a class="headerlink" href="#pytest" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Pytest es un framework que facilita la implementación de pruebas con Python. Puede ser utilizado tanto para escribir pruebas sencillas, como para realizar pruebas funcionales más complejas. Las librerías de pruebas que vienen por defecto en el lenguaje, como unittest y doctest, pueden ser facilmente integradas con pytest.</p>
+</div>
+<div class="section" id="travis">
+<h4>Travis<a class="headerlink" href="#travis" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Travis es un servicio de integración continua que puede ser usado para monitorizar y probar proyectos alojados en GitHub.</p>
+</div>
+<div class="section" id="codacy">
+<h4>Codacy<a class="headerlink" href="#codacy" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Codacy es una herramienta de análisis de código estática que permite la monitorización de calidad de proyectos, con soporte para múltiples lenguajes de programación. Devuelve varias métricas de calidad, como por ejemplo la seguridad, compatibilidad, rendimiento o estilo de código.</p>
+</div>
+</div>
+</div>
+<div class="section" id="anexos">
+<h2>Anexos<a class="headerlink" href="#anexos" title="Enlazar permanentemente con este título">¶</a></h2>
+<div class="section" id="a-pruebas">
+<h3>A. Pruebas<a class="headerlink" href="#a-pruebas" title="Enlazar permanentemente con este título">¶</a></h3>
+<div class="section" id="a-1-fase-de-diseno">
+<h4>A.1. Fase de diseño<a class="headerlink" href="#a-1-fase-de-diseno" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Para probar el módulo las siguientes técnicas serán utilizadas:</p>
+<ul class="simple">
+<li><p>Técnicas estáticas:</p>
+<ul>
+<li><p>Herramientas de análisis de código estático.</p></li>
+</ul>
+</li>
+<li><p>Técnicas dinámicas:</p>
+<ul>
+<li><p>Basadas en especificación, con división en clases de equivalencia.</p></li>
+</ul>
+</li>
+</ul>
+<p>Estas técnicas han sido seleccionadas principalmente debido a la naturaleza del sistema (no hay interfaz gráfica de usuario, por lo que otras técnicas estáticas serían más dificiles de llevar a cabo) y a la experiencia del equipo de desarrollo con la prueba de sistemas relacionados (técnicas basadas en la experiencia no serían apropiadas en este contexto).</p>
+<p>Los siguientes niveles de pruebas serán automatizados y documentados para este sistema:</p>
+<ul class="simple">
+<li><p>Pruebas unitarias y de componentes.</p></li>
+<li><p>Pruebas de integración.</p></li>
+</ul>
+<p>Además, los siguientes tipos de pruebas serán también automatizados y documentados:</p>
+<ul class="simple">
+<li><p>Pruebas funcionales.</p></li>
+<li><p>Pruebas de rendimiento.</p></li>
+</ul>
+</div>
+<div class="section" id="a-2-fase-de-implementacion">
+<h4>A.2. Fase de implementación<a class="headerlink" href="#a-2-fase-de-implementacion" title="Enlazar permanentemente con este título">¶</a></h4>
+<p>Las pruebas implementadas, así como los resultados de éstas se añadirán en esta sección a medida que el desarrollo del sistema avance.</p>
+</div>
+</div>
+<div class="section" id="b-integracion-continua">
+<h3>B. Integración continua<a class="headerlink" href="#b-integracion-continua" title="Enlazar permanentemente con este título">¶</a></h3>
+<p>En el repositorio del módulo llevamos a cabo prácticas de integración continua con el fin de asegurar algunos de los requisitos no funcionales que se deben cumplir. Antes de que una nueva versión del módulo sea pusheada al repositorio, una build de Travis se lanza donde las pruebas son ejecutadas. Con el fin de poder subir los nuevos cambios a la rama principal, todas las pruebas deben pasar, y tanto la cobertura de código cómo la calidad de éste reportada por Codacy no deben bajar por debajo de un umbral especificado.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="Arc42 Template in Markdown.html" class="btn btn-neutral float-right" title="Documentación del módulo herc_sync" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to hercules_sync’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Web Semantics Oviedo
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

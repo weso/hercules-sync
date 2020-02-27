@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Deployment View &#8212; documentación de hercules_sync - </title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="_static/translations.js"></script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="deployment-view">
+<h1>Deployment View<a class="headerlink" href="#deployment-view" title="Enlazar permanentemente con este título">¶</a></h1>
+<p><strong>Content.</strong></p>
+<p>The deployment view describes:</p>
+<ol class="simple">
+<li><p>the technical infrastructure used to execute your system, with
+infrastructure elements like geographical locations, environments,
+computers, processors, channels and net topologies as well as other
+infrastructure elements and</p></li>
+<li><p>the mapping of (software) building blocks to that infrastructure
+elements.</p></li>
+</ol>
+<p>Often systems are executed in different environments, e.g. development
+environment, test environment, production environment. In such cases you
+should document all relevant environments.</p>
+<p>Especially document the deployment view when your software is executed
+as distributed system with more then one computer, processor, server or
+container or when you design and construct your own hardware processors
+and chips.</p>
+<p>From a software perspective it is sufficient to capture those elements
+of the infrastructure that are needed to show the deployment of your
+building blocks. Hardware architects can go beyond that and describe the
+infrastructure to any level of detail they need to capture.</p>
+<p><strong>Motivation.</strong></p>
+<p>Software does not run without hardware. This underlying infrastructure
+can and will influence your system and/or some cross-cutting concepts.
+Therefore, you need to know the infrastructure.</p>
+<p>Maybe the highest level deployment diagram is already contained in
+section 3.2. as technical context with your own infrastructure as ONE
+black box. In this section you will zoom into this black box using
+additional deployment diagrams:</p>
+<ul class="simple">
+<li><p>UML offers deployment diagrams to express that view. Use it,
+probably with nested diagrams, when your infrastructure is more
+complex.</p></li>
+<li><p>When your (hardware) stakeholders prefer other kinds of diagrams
+rather than the deployment diagram, let them use any kind that is
+able to show nodes and channels of the infrastructure.</p></li>
+</ul>
+<div class="section" id="infrastructure-level-1">
+<h2>Infrastructure Level 1<a class="headerlink" href="#infrastructure-level-1" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Describe (usually in a combination of diagrams, tables, and text):</p>
+<ul class="simple">
+<li><p>the distribution of your system to multiple locations, environments,
+computers, processors, .. as well as the physical connections
+between them</p></li>
+<li><p>important justification or motivation for this deployment structure</p></li>
+<li><p>Quality and/or performance features of the infrastructure</p></li>
+<li><p>the mapping of software artifacts to elements of the infrastructure</p></li>
+</ul>
+<p>For multiple environments or alternative deployments please copy that
+section of arc42 for all relevant environments.</p>
+<p><em><strong>&lt;Overview Diagram&gt;</strong></em></p>
+<p>Motivation</p>
+<p>:   <em>&lt;explanation in text form&gt;</em></p>
+<p>Quality and/or Performance Features</p>
+<p>:   <em>&lt;explanation in text form&gt;</em></p>
+<p>Mapping of Building Blocks to Infrastructure</p>
+<p>:   <em>&lt;description of the mapping&gt;</em></p>
+</div>
+<div class="section" id="infrastructure-level-2">
+<h2>Infrastructure Level 2<a class="headerlink" href="#infrastructure-level-2" title="Enlazar permanentemente con este título">¶</a></h2>
+<p>Here you can include the internal structure of (some) infrastructure
+elements from level 1.</p>
+<p>Please copy the structure from level 1 for each selected element.</p>
+<div class="section" id="infrastructure-element-1">
+<h3><em>&lt;Infrastructure Element 1&gt;</em><a class="headerlink" href="#infrastructure-element-1" title="Enlazar permanentemente con este título">¶</a></h3>
+<p><em>&lt;diagram + explanation&gt;</em></p>
+</div>
+<div class="section" id="infrastructure-element-2">
+<h3><em>&lt;Infrastructure Element 2&gt;</em><a class="headerlink" href="#infrastructure-element-2" title="Enlazar permanentemente con este título">¶</a></h3>
+<p><em>&lt;diagram + explanation&gt;</em></p>
+<p>…</p>
+</div>
+<div class="section" id="infrastructure-element-n">
+<h3><em>&lt;Infrastructure Element n&gt;</em><a class="headerlink" href="#infrastructure-element-n" title="Enlazar permanentemente con este título">¶</a></h3>
+<p><em>&lt;diagram + explanation&gt;</em></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">hercules_sync</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navegación</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hercules_sync_doc.html">Documentación del módulo hercules-sync</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Búsqueda rápida</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Ir a" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Web Semantics Oviedo.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/07. Deployment View.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
