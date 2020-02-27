@@ -133,10 +133,14 @@ class GitFile():
 
     def __str__(self):
         rval = [self.path]
-        rval.append('Added lines: ')
+        rval.append('\nAdded lines: ')
         rval.append(str(self.added_lines))
         rval.append('Removed lines: ')
         rval.append(str(self.removed_lines))
+        rval.append('\nOriginal content: ')
+        rval.append(self.source_content)
+        rval.append('\nFinal content: ')
+        rval.append(self.target_content)
         return '\n'.join(rval)
 
 
