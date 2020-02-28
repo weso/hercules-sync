@@ -1,0 +1,478 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="es" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="es" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hercules_sync.git &mdash; documentación de hercules_sync - </title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script src="../../_static/translations.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Índice" href="../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> hercules_sync
+          
+
+          
+            
+            <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../hercules_sync_doc.html">Documentación del módulo hercules-sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Arc42 Template in Markdown.html">Hercules synchronization module documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">hercules_sync</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Código de módulo</a> &raquo;</li>
+        
+          <li><a href="../hercules_sync.html">hercules_sync</a> &raquo;</li>
+        
+      <li>hercules_sync.git</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Código fuente para hercules_sync.git</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlencode</span>
+
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">urllib3</span>
+
+<span class="kn">from</span> <span class="nn">unidiff</span> <span class="kn">import</span> <span class="n">PatchSet</span>
+
+
+<span class="n">GITHUB_BASE_URL</span> <span class="o">=</span> <span class="s1">&#39;https://github.com&#39;</span>
+<span class="n">GITHUB_API_URL</span> <span class="o">=</span> <span class="s1">&#39;https://api.github.com&#39;</span>
+
+<span class="n">USER_AGENT</span> <span class="o">=</span> <span class="s1">&#39;weso&#39;</span>
+
+<div class="viewcode-block" id="GitPushEventHandler"><a class="viewcode-back" href="../../sphinx/hercules_sync.html#hercules_sync.git.GitPushEventHandler">[documentos]</a><span class="k">class</span> <span class="nc">GitPushEventHandler</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Processes information from a GitHub push event.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : dict</span>
+<span class="sd">        Data obtained from a GitHub WebHook regarding a push event.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">before_commit</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;before&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">after_commit</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;after&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repo_name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;repository&#39;</span><span class="p">][</span><span class="s1">&#39;full_name&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diff_parser</span> <span class="o">=</span> <span class="n">GitDiffParser</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_name</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">before_commit</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">after_commit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diff_parser</span><span class="o">.</span><span class="n">load_diff</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_loader</span> <span class="o">=</span> <span class="n">GitDataLoader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repo_name</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">before_commit</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">after_commit</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">added_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Files added in the push.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Generator of :obj: `GitFile`</span>
+<span class="sd">            Generator with GitFile objects which contain information</span>
+<span class="sd">            about each added file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">added_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_parser</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">added_files</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_git_loader_iterator</span><span class="p">(</span><span class="n">added_files</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">modified_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Files modified in the push.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        iterable of :obj: `GitFile`</span>
+<span class="sd">            Iterable with GitFile objects which contain information</span>
+<span class="sd">            about each modified file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">modified_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_parser</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">modified_files</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_git_loader_iterator</span><span class="p">(</span><span class="n">modified_files</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">removed_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Files modified in the push.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        iterable of :obj: `GitFile`</span>
+<span class="sd">            Iterable with GitFile objects which contain information</span>
+<span class="sd">            about each modified file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">removed_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_parser</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">removed_files</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_git_loader_iterator</span><span class="p">(</span><span class="n">removed_files</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_git_loader_iterator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patched_files</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">gitfile</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_loader</span><span class="o">.</span><span class="n">load_files</span><span class="p">(</span><span class="n">patched_files</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">gitfile</span></div>
+
+<div class="viewcode-block" id="GitFile"><a class="viewcode-back" href="../../sphinx/hercules_sync.html#hercules_sync.git.GitFile">[documentos]</a><span class="k">class</span> <span class="nc">GitFile</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Encapsulates the content of a file and the git diff information.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    patched_file : :obj:`unidiff.PatchFile`</span>
+<span class="sd">        PatchFile instance.</span>
+<span class="sd">    source_content : str</span>
+<span class="sd">        Original content of the file before the push (source).</span>
+<span class="sd">    target_content : str</span>
+<span class="sd">        Final content of the file after the push (target).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">patched_file</span><span class="p">,</span> <span class="n">source_content</span><span class="p">,</span> <span class="n">target_content</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_patched_file</span> <span class="o">=</span> <span class="n">patched_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_content</span> <span class="o">=</span> <span class="n">source_content</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_content</span> <span class="o">=</span> <span class="n">target_content</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_patched_file</span><span class="o">.</span><span class="n">path</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">added_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of (str, int)</span>
+<span class="sd">            List of tuples where each tuple contains the content of the added</span>
+<span class="sd">            line and the number of the line in the target file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">line</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">target_line_no</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">hunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_patched_file</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hunk</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">is_added</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">removed_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list of (str, int)</span>
+<span class="sd">            List of tuples where each tuple contains the content of the removed</span>
+<span class="sd">            line and the number of the line in the source file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">line</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">source_line_no</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">hunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_patched_file</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hunk</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">is_removed</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_filter</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">line</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">target_line_no</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">hunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_patched_file</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">hunk</span> <span class="k">if</span> <span class="n">line_filter</span><span class="p">(</span><span class="n">line</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rval</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">]</span>
+        <span class="n">rval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Added lines: &#39;</span><span class="p">)</span>
+        <span class="n">rval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">added_lines</span><span class="p">))</span>
+        <span class="n">rval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Removed lines: &#39;</span><span class="p">)</span>
+        <span class="n">rval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">removed_lines</span><span class="p">))</span>
+        <span class="n">rval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Original content: &#39;</span><span class="p">)</span>
+        <span class="n">rval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_content</span><span class="p">)</span>
+        <span class="n">rval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Final content: &#39;</span><span class="p">)</span>
+        <span class="n">rval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_content</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rval</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GitDiffParser"><a class="viewcode-back" href="../../sphinx/hercules_sync.html#hercules_sync.git.GitDiffParser">[documentos]</a><span class="k">class</span> <span class="nc">GitDiffParser</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Return Diff information from a repository.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    repo_full_name : str</span>
+<span class="sd">        Full name of the github repository (must follow the</span>
+<span class="sd">        form &#39;user_name/repo_name&#39;).</span>
+<span class="sd">    before_commit : str</span>
+<span class="sd">        Sha of the initial commit before the push.</span>
+<span class="sd">    after_ref : str</span>
+<span class="sd">        Sha of the final commit after the push.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo_full_name</span><span class="p">,</span> <span class="n">before_commit</span><span class="p">,</span> <span class="n">after_commit</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compare_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_compare_url</span><span class="p">(</span><span class="n">repo_full_name</span><span class="p">,</span>
+                                                   <span class="n">before_commit</span><span class="p">,</span>
+                                                   <span class="n">after_commit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="GitDiffParser.load_diff"><a class="viewcode-back" href="../../sphinx/hercules_sync.html#hercules_sync.git.GitDiffParser.load_diff">[documentos]</a>    <span class="k">def</span> <span class="nf">load_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        :obj: `unidiff.PatchSet`</span>
+<span class="sd">            PatchSet instance with the diff information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_request</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">404</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DiffNotFoundError</span><span class="p">()</span>
+
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span> <span class="o">=</span> <span class="n">PatchSet</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_build_compare_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">before_commit</span><span class="p">,</span> <span class="n">after_commit</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/</span><span class="si">{1}</span><span class="s1">/compare/</span><span class="si">{2}</span><span class="s1">...</span><span class="si">{3}</span><span class="s1">.diff&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">GITHUB_BASE_URL</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">,</span>
+                                                       <span class="n">before_commit</span><span class="p">,</span> <span class="n">after_commit</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">http</span> <span class="o">=</span> <span class="n">urllib3</span><span class="o">.</span><span class="n">PoolManager</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">http</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+            <span class="s1">&#39;GET&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">compare_url</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="n">USER_AGENT</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="GitDataLoader"><a class="viewcode-back" href="../../sphinx/hercules_sync.html#hercules_sync.git.GitDataLoader">[documentos]</a><span class="k">class</span> <span class="nc">GitDataLoader</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Downloads github files from a commit, before and after a push.</span>
+
+<span class="sd">    This class is used to download files from a github repository given a certain</span>
+<span class="sd">    original (before_ref) and final commit (after_ref).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    repo_name : str</span>
+<span class="sd">        Full name of the github repository where the files are located.</span>
+<span class="sd">    before_ref : str</span>
+<span class="sd">        Sha of the initial commit before the push.</span>
+<span class="sd">    after_ref : str</span>
+<span class="sd">        Sha of the final commit after the push.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; X = &#39;a&#39;</span>
+<span class="sd">    &#39;a&#39;</span>
+<span class="sd">    &gt;&gt;&gt; y = 2</span>
+<span class="sd">    2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">NO_COMMIT_MSG</span> <span class="o">=</span> <span class="s2">&quot;No commit found for the ref&quot;</span>
+    <span class="n">NOT_FOUND_MSG</span> <span class="o">=</span> <span class="s2">&quot;Not Found&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">before_ref</span><span class="p">,</span> <span class="n">after_ref</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repo_name</span> <span class="o">=</span> <span class="n">repo_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">before_ref</span> <span class="o">=</span> <span class="n">before_ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">after_ref</span> <span class="o">=</span> <span class="n">after_ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">http</span> <span class="o">=</span> <span class="n">urllib3</span><span class="o">.</span><span class="n">PoolManager</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GitDataLoader.load_files"><a class="viewcode-back" href="../../sphinx/hercules_sync.html#hercules_sync.git.GitDataLoader.load_files">[documentos]</a>    <span class="k">def</span> <span class="nf">load_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files_to_load</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Downloads the given files, returning them inside GitFile objects.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        files_to_load : list of :obj:`unidiff.PatchFile`</span>
+<span class="sd">            Iterable containing instances of patchfile objects.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        -------</span>
+<span class="sd">        :obj:`GitFile`</span>
+<span class="sd">            Generator that returns one instance of the GitFile class for each</span>
+<span class="sd">            downloaded file from GitHub.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">GitFile</span><span class="p">(</span><span class="n">patched_file</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_load_file</span><span class="p">(</span><span class="n">patched_file</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">before_ref</span><span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_load_file</span><span class="p">(</span><span class="n">patched_file</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">after_ref</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">patched_file</span> <span class="ow">in</span> <span class="n">files_to_load</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">ref</span><span class="p">):</span>
+        <span class="n">download_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_download_url</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span>
+
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_request</span><span class="p">(</span><span class="n">download_url</span><span class="p">)</span>
+        <span class="n">json_response</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="s1">&#39;message&#39;</span> <span class="ow">in</span> <span class="n">json_response</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">json_response</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">GitDataLoader</span><span class="o">.</span><span class="n">NOT_FOUND_MSG</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="n">GitDataLoader</span><span class="o">.</span><span class="n">NO_COMMIT_MSG</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+                <span class="n">err_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Commit </span><span class="si">{ref}</span><span class="s2"> was not found for repository &#39;</span><span class="si">{self.repo_name}</span><span class="s2">&#39;.&quot;</span>
+                <span class="k">raise</span> <span class="n">InvalidCommitError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+
+        <span class="n">content</span> <span class="o">=</span> <span class="n">json_response</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">]</span>
+        <span class="n">decoded_content</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">decoded_content</span>
+
+    <span class="k">def</span> <span class="nf">_build_download_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">ref</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">urlencode</span><span class="p">({</span><span class="s1">&#39;ref&#39;</span><span class="p">:</span> <span class="n">ref</span><span class="p">})</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">/repos/</span><span class="si">{1}</span><span class="s1">/contents/</span><span class="si">{2}</span><span class="s1">?</span><span class="si">{3}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">GITHUB_API_URL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">repo_name</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_send_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">http</span><span class="o">.</span><span class="n">request</span><span class="p">(</span>
+            <span class="s1">&#39;GET&#39;</span><span class="p">,</span>
+            <span class="n">url</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="n">USER_AGENT</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DiffNotFoundError"><a class="viewcode-back" href="../../sphinx/hercules_sync.html#hercules_sync.git.DiffNotFoundError">[documentos]</a><span class="k">class</span> <span class="nc">DiffNotFoundError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Exception subclass used when a diff file cannot be found from the server &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="InvalidCommitError"><a class="viewcode-back" href="../../sphinx/hercules_sync.html#hercules_sync.git.InvalidCommitError">[documentos]</a><span class="k">class</span> <span class="nc">InvalidCommitError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Exception subclass that represents the use of an invalid commit when loading a file &quot;&quot;&quot;</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Web Semantics Oviedo
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
