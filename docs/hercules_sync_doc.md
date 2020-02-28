@@ -137,32 +137,6 @@ En cuanto a la documentación del código también hay una serie de estilos que 
 
 ### Tecnologías utilizadas
 
-#### Python
-El principal lenguaje de programación utilizado para la implementación del módulo _hercules\_sync_ es [Python](https://www.python.org). Python es un lenguaje de propósito general, interpretado y de alto nivel diseñado por Guido van Rossum en 1991. Las principales características de Python son su sintaxis legible y el tipado dinámico.
-
-La elección de Python para este módulo se debe principalmente al amplio abanico de librerías existentes que permiten trabajar con ontologías y triple stores en comparación con otros lenguajes.
-
-El módulo será compatible exclusivamente con Python 3. El 1 de Enero de 2020 se anunció el fin de ciclo de Python 2, siendo Python 3 la versión mantenida actualmente.  
-
-#### Flask
-[Flask](https://palletsprojects.com/p/flask/) es un microframework web basado en el estándar [WSGI](https://wsgi.readthedocs.io/en/latest/) que destaca por su flexibilidad y eficiencia.
-
-Flask será utilizado en _hercules\_sync_ para lanzar un servidor web que escuche a las actualizaciones de las ontologías por parte del sistema de control de versiones.
-
-#### WikidataIntegrator
-[WikidataIntegrator](https://github.com/SuLab/WikidataIntegrator) es una librería que permite introducir y leer datos sobre entidades en una instancia de Wikibase a través de la API de [MediaWiki](https://www.mediawiki.org/wiki/API:Main_page).
-
-Esta librería es utilizada para introducir las modificaciones que se hayan producido en las ontologías en la instancia de Wikibase donde se encuentra el triple-store.
-
-#### Pytest
-Pytest es un framework que facilita la implementación de pruebas con Python. Puede ser utilizado tanto para escribir pruebas sencillas, como para realizar pruebas funcionales más complejas. Las librerías de pruebas que vienen por defecto en el lenguaje, como unittest y doctest, pueden ser facilmente integradas con pytest.
-
-#### Travis
-Travis es un servicio de integración continua que puede ser usado para monitorizar y probar proyectos alojados en GitHub.
-
-#### Codacy
-Codacy es una herramienta de análisis de código estática que permite la monitorización de calidad de proyectos, con soporte para múltiples lenguajes de programación. Devuelve varias métricas de calidad, como por ejemplo la seguridad, compatibilidad, rendimiento o estilo de código.
-
 ## Anexos
 
 ### A. Pruebas
@@ -187,4 +161,3 @@ Además, los siguientes tipos de pruebas serán también automatizados y documen
 Las pruebas implementadas, así como los resultados de éstas se añadirán en esta sección a medida que el desarrollo del sistema avance.
 
 ### B. Integración continua
-En el repositorio del módulo llevamos a cabo prácticas de integración continua con el fin de asegurar algunos de los requisitos no funcionales que se deben cumplir. Antes de que una nueva versión del módulo sea pusheada al repositorio, una build de Travis se lanza donde las pruebas son ejecutadas. Con el fin de poder subir los nuevos cambios a la rama principal, todas las pruebas deben pasar, y tanto la cobertura de código cómo la calidad de éste reportada por Codacy no deben bajar por debajo de un umbral especificado.
