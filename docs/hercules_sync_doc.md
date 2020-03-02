@@ -79,13 +79,7 @@ A continuación se muestra el diagrama de componentes del módulo:
 ### Diseño de clases
 En esta sección vamos a mostrar el diseño de clases del módulo. Para facilitar la comprensión y lectura de las clases las hemos dividido en subsecciones correspondientes a cada uno de los componentes detectados en el apartado previo.
 
-> __Singularidades de Python__. <br>
-> Dado que Python es un lenguaje dinámicamente tipado que carece de algunas de las herramientas de otros lenguajes de programación, como las interfaces, haremos las siguientes distinciones en los diagramas UML:
-> * Los módulos de Python que estén compuestos únicamente por funciones, y no tengan ninguna clase en su interior, serán tratados como clases estáticas en los diagramas UML.
-> * Dado que los modificadores de acceso no se encuentran disponibles en Python, seguimos la convención de que los atributos y funciones cuyo nombre comienza con guión bajo son considerados privados. Estos elementos se mostrarán como privados en los diagramas UML.
-> * Como no hay interfaces en Python, representaremos como interfaces aquellas clases abstractas que no tengan ningún atributo o implementación de algún método.
->
-> Además, es importante destacar que la filosofía de Python se basa en el Duck typing y no en la implementación de interfaces. Sin embargo, se ha optado por la creación de "pseudo-interfaces" (clases abstractas sin atributos ni métodos implementados) y su extensión por otras clases. Esto se hizo con el fin de especificar explícitamente que una clase sigue una determinada interfaz, en vez de comprobarlo implícitamente al mirar los métodos que la clase provee internamente.
+
 
 #### Componente listener
 * Listener: La clase Listener inicializa el servidor de Flask a través de la AppFactory, y establece el punto de entrada a través del cual llega la información sobre las actualizaciones de las ontologías.
