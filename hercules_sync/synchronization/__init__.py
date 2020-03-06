@@ -1,4 +1,3 @@
-from .triple_info import TripleInfo
 from .operations import AdditionOperation, RemoveOperation, SyncOperation
 from .algorithms import BaseSyncAlgorithm, GraphDiffSyncAlgorithm, \
                         NaiveSyncAlgorithm, RDFSyncAlgorithm
@@ -11,5 +10,4 @@ __all__ = [
     'RDFSyncAlgorithm',
     'RemoveOperation',
     'SyncOperation',
-    'TripleInfo'
 ]
