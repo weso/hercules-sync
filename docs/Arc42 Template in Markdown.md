@@ -63,52 +63,78 @@ In this section we will enumerate the top quality goals for the system's archite
 *
 
 ## Building Block View
+The following diagram shows the static decomposition of the system into building blocks:
 
-### Whitebox Overall System
+![](images/herc_sync_bbview.png)
 
+### Whitebox hercules_sync
 
-#### &lt;Name black box 1&gt;
+#### Rationale
+T
 
-#### &lt;Name black box 2&gt;
+#### Contained Blackboxes
 
+#### Interfaces
 
-#### &lt;Name black box n&gt;
+#### Diff Processor
 
+#### Ontology Synchronizer
 
-#### &lt;Name interface 1&gt;
-
-
-#### &lt;Name interface m&gt;
+#### Triple-Store Manager
 
 ### Level 2
+In this level we will detail each one of the previous building blocks of the system identified in level 1.
 
-
-#### White Box *&lt;building block 1&gt;*
-
-#### White Box *&lt;building block 2&gt;*
-
-
-#### White Box *&lt;building block m&gt;*
-
-
-### Level 3
-
-> __Singularidades de Python__. <br>
-> Dado que Python es un lenguaje dinámicamente tipado que carece de algunas de las herramientas de otros lenguajes de programación, como las interfaces, haremos las siguientes distinciones en los diagramas UML:
-> * Los módulos de Python que estén compuestos únicamente por funciones, y no tengan ninguna clase en su interior, serán tratados como clases estáticas en los diagramas UML.
-> * Dado que los modificadores de acceso no se encuentran disponibles en Python, seguimos la convención de que los atributos y funciones cuyo nombre comienza con guión bajo son considerados privados. Estos elementos se mostrarán como privados en los diagramas UML.
-> * Como no hay interfaces en Python, representaremos como interfaces aquellas clases abstractas que no tengan ningún atributo o implementación de algún método.
+> __Python singularities__. <br>
+> Since Python is a dynamically typed language that lacks some of the constructs of other programming languages, such as Interfaces, we will be making the following distinctions in the UML diagrams:
+> * Python modules which are just composed of functions, and do not have any classes inside, will be treated as static classes in the UML diagrams.
+> * Since access modifiers don't exist in Python, we used the convention that underscored fields and funtions are considered private. These items will be shown as private in the UML diagrams.
+> * Since there are no interfaces in Python, we will represent as an interface abstract classes that do not have any field or implemented method.
+> * Multiple inheritance is possible in Python, so there could be cases in the UML diagrams where a class extends multiple classes.
 >
-> Además, es importante destacar que la filosofía de Python se basa en el Duck typing y no en la implementación de interfaces. Sin embargo, se ha optado por la creación de "pseudo-interfaces" (clases abstractas sin atributos ni métodos implementados) y su extensión por otras clases. Esto se hizo con el fin de especificar explícitamente que una clase sigue una determinada interfaz, en vez de comprobarlo implícitamente al mirar los métodos que la clase provee internamente.
+> Also, it’s important to note that Python relies in duck typing rather than in implementation of interfaces. However, we still opted to create ”pseudo-interfaces” (abstract classes with no fields or imple- mented methods) and extend them by other classes. This was done in order to specify explicitly that a class followed a given interface, rather than implicitly by checking at the methods that it provides internally.
 
-#### White Box &lt;\_building block x.1\_&gt;
+#### Listener
+* Listener: The listener class initializes a flask server through the AppFactory, and establishes the entrypoint where information about the ontologies' updates will be received.
+* Webhook: This class manages the communication with the control version system through Webhooks (for more information about webhooks, see https://developer.github.com/webhooks/) in a safe manner with the use of RSA keys.
+* AppFactory: Factory class that creates the Flask application given a specific server configuration.
+* Config: Configuration class to be used by the server.
+
+<p align="center">
+  <img src="images/herc_sync_listener_classes.png" width=500>
+</p>
 
 
-#### White Box &lt;\_building block x.2\_&gt;
+#### Diff Processor
+* PushEventHandler: Main class used by the listener to process all the received information about incoming changes from the ontologies.
+* PushInfo: Information about the data received from the control version system.
+* GitDiffParser: This class is in charge of parsing the diff about each file changed and return the lines that were modified in each file.
+* GitDataLoader: The GitDataLoader class will download the content of each file before and after the modifications were done.
+* GitFile: Wrapper which stores the content of a modified file before and after the modification, as well as other metadata about the file.
 
+<p align="center">
+  <img src="images/herc_sync_diff_parser_classes.png" width=600>
+</p>
 
-#### White Box &lt;\_building block y.1\_&gt;
+#### Ontology Synchronizer
+* OntologySynchronizer: This class receives the synchronization algorithm to be used and returns a list of operations to perform on the triple-store to reflect the current modifications from the ontology files.
+* SyncAlgorithm: Interface to be implemented by each one of the synchronization algorithms. These algorithms receive the modified lines from each file and return the list of operations to be made.
+* NaiveSync: Simple synchronization algorithms that overwrites the content of the triple-store to be consistent with the current state of the ontology files.
+* RDFSync: [RDFSync](https://link.springer.com/content/pdf/10.1007%2F978-3-540-76298-0_39.pdf) algorithm for the synchronization of RDF files.
+* SyncOperation: Abstract class that represents the operation to be made in the triple-store.
 
+<p align="center">
+  <img src="images/herc_sync_ontologies_synchronizer_classes.png">
+</p>
+
+#### Triple-Store Manager
+* TripleStoreManager: Interface to be implemented by each one of the adapters that will connect to a specific triple-store.
+* WikibaseAdapter: Adapter that connects to a BlazeGraph triple-store configured in a wikibase instance.
+* ModificationResult: Class which encapsulates the result of a modification performed on a triple-store.
+
+<p align="center">
+  <img src="images/herc_sync_triplestore_manager_classes.png" width=500>
+</p>
 
 ## Runtime View
 
@@ -164,6 +190,11 @@ Codacy es una herramienta de análisis de código estática que permite la monit
 ### Continuous integration
 In the module repository we follow continuous integration practices in order to fulfill some of the non-functional requirements that need to be met. Before a new version of the module is pushed to the repository, a Travis build is launched where all the tests are executed. In order to be able to upload new changed to the master branch all tests need to pass, and both code coverage and quality returned by Codecov and Codacy must not drop below a given threshold.
 
+### Style guides
+The main coding standard that was followed was the [PEP 8](https://www.python.org/dev/peps/pep-0008/) Python style guide. This standard specifies how code written in Python should be formatted (number of characters per line, import formats...) and is widely adopted in the community.
+
+In order to document the code there are also several formatting styles that can be used. In our case, we opted to use the [numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html) due to the readability it provides when compared to other alternatives.
+
 ## Design Decisions
 
 ### Adapter pattern: Changing the triple-store implementation
@@ -177,6 +208,23 @@ In the module repository we follow continuous integration practices in order to 
 ### Quality Scenarios
 
 ## Risks and Technical Debts
+
+## Tests
+### Design phase
+In order to test this module the following techniques will be used:
+* Static techniques:
+  * Static code analysis tools.
+* Dynamic techniques:
+  * Specification-based, with equivalence class partitioning.
+
+These techniques were selected mainly due to the nature of the system (there is no graphical interface, so other static techniques were more difficult to use) and also due to the experience of the development team testing related systems (experience based techniques were not appropriate for this context).
+
+The following test levels will be automatised and documented for this system:
+* Unit and component tests.
+* Integration tests.
+
+### Implementation phase
+All the tests that will be implemented, as well as their respective results will be added to this section as the development of the system goes forward.
 
 ## Glossary
 
