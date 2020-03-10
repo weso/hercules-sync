@@ -36,7 +36,7 @@ class GraphDiffSyncAlgorithm(BaseSyncAlgorithm):
         target_g = Graph().parse(format='turtle', data=file.target_content)
         source_g_iso = to_isomorphic(source_g)
         target_g_iso = to_isomorphic(target_g)
-        _, additions_graph, removals_graph = graph_diff(source_g_iso,
+        _, removals_graph, additions_graph = graph_diff(source_g_iso,
                                                         target_g_iso)
         additions_ops = self._create_add_ops_from(additions_graph)
         removals_ops = self._create_remove_ops_from(removals_graph)

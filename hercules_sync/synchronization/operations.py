@@ -24,7 +24,7 @@ class SyncOperation(ABC):
         Parameters
         ----------
         triple_store : :obj:`TripleStoreManager`
-            Instance of triple store manager 
+            Instance of triple store manager
 
         Returns
         -------
@@ -34,10 +34,10 @@ class SyncOperation(ABC):
         """
         pass
 
-    def __str_(self):
-        return f"#{self._triple_info.subject} \
-                 #{self._triple_info.predicate} \
-                 #{self._triple_info.object}"
+    def __str__(self):
+        return f"{self._triple_info.subject} \
+                 {self._triple_info.predicate} \
+                 {self._triple_info.object}"
 
 class AdditionOperation(SyncOperation):
     def execute(self, triple_store: TripleStoreManager) -> ModificationResult:
