@@ -13,6 +13,10 @@ class WikibaseAdapter(TripleStoreManager):
         self._local_login = wdi_login.WDLogin(username, password, mediawiki_api_url)
 
     def create_triple(self, triple_info: TripleInfo) -> ModificationResult:
+        # TODO: parse special case of labels and comments
+        if triple_info.predicate == 'http://www.w3.org/2000/01/rdf-schema#label':
+            pass
+
         # TODO: parse property datatype from Python type of property in triple_info
         prop_id = self._get_wb_id_of(triple_info.predicate, 'property', 'wikibase-item')
         subject_id = self._get_wb_id_of(triple_info.subject, 'item')
