@@ -3,20 +3,22 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to hercules_sync's documentation!
+Documentation of the hercules_sync system
 =========================================
+In this site you can explore the documentation written for the hercules_sync system.
+This system was developed as a component of the Hércules project Ontological Infrastructure.
+
+Main documentation
+------------------
 
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
 
-   ../../../hercules_sync_doc
-   Arc42 Template in Markdown
+   hercules_sync_doc
 
-
-Indices and tables
-==================
+Code documentation
+------------------
+Click on the following links to explore the Python docstrings of the system:
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
