@@ -1,156 +1,146 @@
-# Documentación del módulo hercules-sync
+# Hercules synchronization module architecture
 
-## Tabla de contenido
-<!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:0 orderedList:1 -->
-
-1. [Introducción](#introducción)
-2. [Alcance](#alcance)
-3. [Requisitos](#requisitos)
-	1. [Requisitos funcionales](#requisitos-funcionales)
-	2. [Requisitos no funcionales](#requisitos-no-funcionales)
-4. [Diseño](#diseño)
-	1. [Diagrama de componentes](#diagrama-de-componentes)
-	2. [Diseño de clases](#diseño-de-clases)
-		1. [Componente listener](#componente-listener)
-		2. [Componente diff_parser](#componente-diffparser)
-		3. [Componente ontologies_synchronizer](#componente-ontologiessynchronizer)
-		4. [Componente triplestore_manager](#componente-triplestoremanager)
-5. [Implementación](#implementación)
-	1. [Guías de estilo](#guías-de-estilo)
-	2. [Tecnologías utilizadas](#tecnologías-utilizadas)
-		1. [Python](#python)
-		2. [Flask](#flask)
-		3. [WikidataIntegrator](#wikidataintegrator)
-		4. [Pytest](#pytest)
-		5. [Travis](#travis)
-		6. [Codacy](#codacy)
-6. [Anexos](#anexos)
-	1. [A. Pruebas](#a-pruebas)
-		1. [A.1. Fase de diseño](#a1-fase-de-diseño)
-		2. [A.2. Fase de implementación](#a2-fase-de-implementación)
-	2. [B. Integración continua](#b-integración-continua)
-
-<!-- /TOC -->
-
-## Introducción
-En este documento se presenta la documentación del módulo de sincronización - llamado a partir de ahora _hercules\_sync_ - entre ficheros de ontologías y un Triple-store, que forma parte de la Infraestructura Ontológica del proyecto Hércules.
-
-## Alcance
-El módulo _hercules\_sync_ se encarga de recibir actualizaciones de las ontologías y shapes que se encuentran almacenadas en un sistema de control de versiones. Cuando recibe una actualización, deberá procesar los cambios que se han realizado en las ontologías y/o shapes y reflejar estos cambios en el triple store en el que se encuentren almacenadas.
-
-## Requisitos
-A continuación se indican los requisitos de alto nivel identificados en la toma de requisitos del sistema. Éstos se encuentran divididos en requisitos funcionales y no funcionales:
-
-### Requisitos funcionales
-| Código        | Descripción          |
-|:-------------:|:-------------|
-| RF1      | El sistema establecerá un punto de entrada por el cuál recibir información sobre las actualizaciones de las ontologías. |
-| RF2 | El sistema procesará la información recibida del CVS relativa a la actualización de las ontologías. |
-| RF3 | El sistema detectará los cambios a realizar en el triple-store a partir de la información sobre las actualizaciones procesada.  |
-| RF4 | El sistema se conectará con un triple-store para reflejar los cambios producidos en las ontologías. |
-| RF5 | El sistema llevará a cambio la sincronización inversa: de cambios producidos en el triple-store a los ficheros con las ontologías. |
-| RF6 | El sistema utilizará herramientas de logging para detectar anomalías en su funcionamiento. |
-
-### Requisitos no funcionales
-| Código        | Descripción          |
-|:-------------:|:-------------|
-| RNF1      | Seguridad: El sistema recibirá notificaciones de actualización del CVS de forma segura utilizando claves RSA. |
-| RNF2      | Seguridad: El sistema actualizará el triple-store de forma segura a través del protocolo OAuth. |
-| RNF3 | Compatibilidad: El sistema deberá funcionar como mínimo con las versiones 3.6, 3.7 y 3.8 del lenguaje de programación Python. |
-| RNF4 | Mantenibilidad: La implementación del sistema seguirá el estándar de código PEP8. |
-| RNF5 | Calidad: La cobertura de código de cada nueva versión será de al menos un 90%. |
-| RNF6 | Extensibilidad: El sistema facilitará la utilización de distintos triple-stores donde almacenar las ontologías. |
+> __Note: WORK IN PROGRESS__ <br>
+> This document is being updated in a weekly basis and is currently a work in progress.
 
 
-## Diseño
-En este apartado se especifica el diseño del módulo _hercules\_sync_. En primer lugar, se adjunta el diagrama de componentes del módulo, junto con una explicación de las responsabilidades de cada componente e interfaz que proporciona. A continuación, introducimos el diseño de las clases de cada componente a más bajo nivel, de nuevo acompañadas de explicaciones del funcionamiento de cada clase del sistema.
+## Introduction and Goals
+This document includes the architectural documentation for the synchronization module - from now on called _hercules\_sync_ - between ontology files and a triple-store, whis is a part of the ontological infrastructure of Project Hércules.
 
-### Diagrama de componentes
+The structure of this document follows the [arc42](https://arc42.org/) template for documentation of software and systems architectures.
+
+### Requirements Overview
+The overall goal of _hercules\_sync_ is to syncrhonize ontologies content between files hosted in a version control system and a triplestore where the content is stored.
+
+A more complete analysis of the system's requirements can be found in the __Requirements analysis__ section.
+
+### Quality Goals
+In this section we will enumerate the top quality goals for the system's architecture:
+
+| Priority | Goal | Scenario |
+| ---- | ----------- | -------- |
+| 1 | Consistency | |
+| 1 | Flexibility | |
+| 1 | Fault Tolerance | |
+
+### Stakeholders
+
+| Role/Name   | Description                   | Expectations              |
+| ----------- | ------------------------- | ------------------------- |
+| Domain Experts | User that modifies the content of the ontology through the user interface provided by the ontology publication service. | When a change is made through the user interface, the content of the ontologies in the version control system should be consistent with these changes. |
+| Ontology Engineer | User that modifies the content of the ontology directly from the version control system. | Once a ontology file is modified, the changes should be reflected in the triplestore. |
+
+## Architecture Constraints
+
+| Contraint | Description                            |
+|:---------:|----------------------------------------|
+|     C1    | The system must be developed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html). |
+|     C2    | The system must be platform-independent and should run on the major operating systems (Windows™, Linux, and Mac-OS™). |
+|     C3    | The system must be runnable from the command line. |
+|     C4    | The control versions system used to store the ontologies will be git based.  |
+
+## System Scope and Context
+
+### Business Context
+
+### Technical Context
+
+## Solution Strategy
+* Use
+
+## Building Block View
+The following diagram shows the static decomposition of the system into building blocks:
+
+![](images/herc_sync_bbview.png)
+
+### Whitebox hercules_sync
+
+#### Rationale
+
+
+#### Contained Blackboxes
 Los componentes e interfaces detectados son los siguientes:
 * listener: Este componente es el punto de entrada al subsistema por parte de otros sistemas externos. Para ello ofrece una interfaz al exterior, llamada OnWebhook, que es la encargada de recibir los datos sobre las actualizaciones de las ontologías por parte del CVS.
 * ontology_synchronizer: Este componente realiza la sincronización de los cambios recibidos, creando operaciones a realizar en el triple_store para reflejar estos cambios. Ofrece una interfaz llamada _SynchronizeOntologies_, que es utilizada por el componente listener para sincronizar los cambios recibidos.
 * diff_parser: El componente _diff\_parser_ se encarga de procesar la información del diff de los ficheros típica de los sistemas de control de versiones basados en Git. Ofrece una interfaz _ParseDiff_, que es utilizada por el componente _ontology\_synchronizer_ para obtener información detallada sobre los cambios en los ficheros de ontologías.
 * triplestore_manager: Por último, el componente _triplestore\_manager_ se encarga de ejecutar las operaciones recibidas del componente _ontology\_synchronizer_ sobre el triple-store elegido. Para ello ofrece el interfaz _ExecuteModification_.
 
-A continuación se muestra el diagrama de componentes del módulo:
+### Level 2
+In this level we will detail each one of the previous building blocks of the system identified in level 1.
 
-![](images/herc_sync_components.png)
-
-### Diseño de clases
-En esta sección vamos a mostrar el diseño de clases del módulo. Para facilitar la comprensión y lectura de las clases las hemos dividido en subsecciones correspondientes a cada uno de los componentes detectados en el apartado previo.
-
-> __Singularidades de Python__. <br>
-> Dado que Python es un lenguaje dinámicamente tipado que carece de algunas de las herramientas de otros lenguajes de programación, como las interfaces, haremos las siguientes distinciones en los diagramas UML:
-> * Los módulos de Python que estén compuestos únicamente por funciones, y no tengan ninguna clase en su interior, serán tratados como clases estáticas en los diagramas UML.
-> * Dado que los modificadores de acceso no se encuentran disponibles en Python, seguimos la convención de que los atributos y funciones cuyo nombre comienza con guión bajo son considerados privados. Estos elementos se mostrarán como privados en los diagramas UML.
-> * Como no hay interfaces en Python, representaremos como interfaces aquellas clases abstractas que no tengan ningún atributo o implementación de algún método.
+> __Python singularities__. <br>
+> Since Python is a dynamically typed language that lacks some of the constructs of other programming languages, such as Interfaces, we will be making the following distinctions in the UML diagrams:
+> * Python modules which are just composed of functions, and do not have any classes inside, will be treated as static classes in the UML diagrams.
+> * Since access modifiers don't exist in Python, we used the convention that underscored fields and funtions are considered private. These items will be shown as private in the UML diagrams.
+> * Since there are no interfaces in Python, we will represent as an interface abstract classes that do not have any field or implemented method.
+> * Multiple inheritance is possible in Python, so there could be cases in the UML diagrams where a class extends multiple classes.
 >
-> Además, es importante destacar que la filosofía de Python se basa en el Duck typing y no en la implementación de interfaces. Sin embargo, se ha optado por la creación de "pseudo-interfaces" (clases abstractas sin atributos ni métodos implementados) y su extensión por otras clases. Esto se hizo con el fin de especificar explícitamente que una clase sigue una determinada interfaz, en vez de comprobarlo implícitamente al mirar los métodos que la clase provee internamente.
+> Also, it’s important to note that Python relies in duck typing rather than in implementation of interfaces. However, we still opted to create ”pseudo-interfaces” (abstract classes with no fields or imple- mented methods) and extend them by other classes. This was done in order to specify explicitly that a class followed a given interface, rather than implicitly by checking at the methods that it provides internally.
 
-#### Componente listener
-* Listener: La clase Listener inicializa el servidor de Flask a través de la AppFactory, y establece el punto de entrada a través del cual llega la información sobre las actualizaciones de las ontologías.
-* Webhook: Esta clase gestiona la comunicación con el sistema de control de versiones a través de Webhooks (ver https://developer.github.com/webhooks/) de forma segura con el uso de claves RSA.
-* AppFactory: Factoría encargada de crear la aplicación de Flask a partir de una configuración específica.
-* Config: Clase de configuración utilizada por el servidor.
+#### Listener
+* Listener: The listener class initializes a flask server through the AppFactory, and establishes the entrypoint where information about the ontologies' updates will be received.
+* Webhook: This class manages the communication with the control version system through Webhooks (for more information about webhooks, see https://developer.github.com/webhooks/) in a safe manner with the use of RSA keys.
+* AppFactory: Factory class that creates the Flask application given a specific server configuration.
+* Config: Configuration class to be used by the server.
 
-<p align="center">
-  <img src="images/herc_sync_listener_classes.png" width=500>
-</p>
+![](images/herc_sync_listener_classes.png)
 
-#### Componente diff_parser
-* PushEventHandler: Clase principal con la que se comunicará el listener para procesar la información recibida sobre los cambios producidos en las ontologías.
-* PushInfo: Información sobre los datos recibidos por el sistema de control de versiones.
-* GitDiffParser: Esta clase se encarga de parsear el diff de los cambios para devolver las líneas que han sido modificadas en cada fichero.
-* GitDataLoader: La clase GitDataLoader descarga los datos de cada fichero antes y después de las modificaciones realizadas.
-* GitFile: Wrapper que almacena el contenido de un fichero modificado antes y después de la modificación, así como otra metainformación del fichero.
 
-<p align="center">
-  <img src="images/herc_sync_diff_parser_classes.png" width=600>
-</p>
+#### Diff Processor
+* PushEventHandler: Main class used by the listener to process all the received information about incoming changes from the ontologies.
+* PushInfo: Information about the data received from the control version system.
+* GitDiffParser: This class is in charge of parsing the diff about each file changed and return the lines that were modified in each file.
+* GitDataLoader: The GitDataLoader class will download the content of each file before and after the modifications were done.
+* GitFile: Wrapper which stores the content of a modified file before and after the modification, as well as other metadata about the file.
 
-#### Componente ontologies_synchronizer
-* OntologySynchronizer: Esta clase recibe un algoritmo de sincronización a utilizar y devuelve una lista de operaciones a realizar en el triple-store para reflejar los cambios existentes en los ficheros de ontologías.
-* SyncAlgorithm: Interfaz a implementar por cada uno de los algoritmos de sincronización. Estos algoritmos reciben las líneas modificadas en cada fichero y devuelven la lista de operaciones a realizar.
-* NaiveSync: Algoritmo de sincronización simple que sobrescribe el contenido del triple-store para que sea consistente con los ficheros de ontologías.
-* RDFSync: Algoritmo [RDFSync](https://link.springer.com/content/pdf/10.1007%2F978-3-540-76298-0_39.pdf) para la sincronización de ficheros RDF.
-* SyncOperation: Clase abstracta que representa una operación a realizar en el triple-store.
+![](images/herc_sync_diff_parser_classes.png)
 
-<p align="center">
-  <img src="images/herc_sync_ontologies_synchronizer_classes.png">
-</p>
+#### Ontology Synchronizer
+* OntologySynchronizer: This class receives the synchronization algorithm to be used and returns a list of operations to perform on the triple-store to reflect the current modifications from the ontology files.
+* SyncAlgorithm: Interface to be implemented by each one of the synchronization algorithms. These algorithms receive the modified lines from each file and return the list of operations to be made.
+* NaiveSync: Simple synchronization algorithms that overwrites the content of the triple-store to be consistent with the current state of the ontology files.
+* RDFSync: [RDFSync](https://link.springer.com/content/pdf/10.1007%2F978-3-540-76298-0_39.pdf) algorithm for the synchronization of RDF files.
+* SyncOperation: Abstract class that represents the operation to be made in the triple-store.
 
-#### Componente triplestore_manager
-* TripleStoreManager: Interfaz a ser implementada por cada uno de los adaptadores que se conecten con un triple-store particular.
-* WikibaseAdapter: Adaptador para conectarse con el triple-store BlazeGraph configurado en una instancia de wikibase.
-* ModificationResult: Clase que encapsula el resultado de la modificación realizada en el triple-store.
+![](images/herc_sync_ontologies_synchronizer_classes.png)
 
-<p align="center">
-  <img src="images/herc_sync_triplestore_manager_classes.png" width=500>
-</p>
+#### Triple-Store Manager
+* TripleStoreManager: Interface to be implemented by each one of the adapters that will connect to a specific triple-store.
+* WikibaseAdapter: Adapter that connects to a BlazeGraph triple-store configured in a wikibase instance.
+* ModificationResult: Class which encapsulates the result of a modification performed on a triple-store.
 
-## Implementación
+![](images/herc_sync_triplestore_manager_classes.png)
 
-### Guías de estilo
-El principal estándar de código seguido para la implementación de módulo es la guía de estilo [PEP 8](https://www.python.org/dev/peps/pep-0008/) de Python. Este estándar especifica cómo se debería formatear (número de caracteres por linea, decisiones de estilo...) todo el código escrito en el lenguaje de programación Python, y está ampliamente adoptado por la comunidad del lenguaje.
+## Runtime View
 
-En cuanto a la documentación del código también hay una serie de estilos que pueden ser usados. En este caso hemos optado por utilizar el [numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html), debido a la facilidad de lectura que proporciona frente a otras alternativas.
+### Modify an ontology file
 
-### Tecnologías utilizadas
+### Direct modification of the triple store
+
+## Deployment View
+
+## Technical and Cross-cutting Concepts
+In this section we will
+
+### Technologies used
+The following technologies have been used in the development of the system.
 
 #### Python
-El principal lenguaje de programación utilizado para la implementación del módulo _hercules\_sync_ es [Python](https://www.python.org). Python es un lenguaje de propósito general, interpretado y de alto nivel diseñado por Guido van Rossum en 1991. Las principales características de Python son su sintaxis legible y el tipado dinámico.
+The main programming language used for the module implementation is [Python](https://www.python.org). Python is a interpreted, high level and general purpose language designed by Guido van Rossum in 1991. It is characterized by its legible syntax and dynamic typing.
 
-La elección de Python para este módulo se debe principalmente al amplio abanico de librerías existentes que permiten trabajar con ontologías y triple stores en comparación con otros lenguajes.
+Python was chosen for the implementation of this module since it provides a wide ecosystem of libraries that allow working with ontologies and triple stores compared to other languages.
 
-El módulo será compatible exclusivamente con Python 3. El 1 de Enero de 2020 se anunció el fin de ciclo de Python 2, siendo Python 3 la versión mantenida actualmente.  
+This module will have compatibility with Python 3. Since January 1st of 2020 the end of cycle of Python 2 was announced, and Python 3 is the current maintained version.
 
 #### Flask
-[Flask](https://palletsprojects.com/p/flask/) es un microframework web basado en el estándar [WSGI](https://wsgi.readthedocs.io/en/latest/) que destaca por su flexibilidad y eficiencia.
+[Flask](https://palletsprojects.com/p/flask/) is a web microframework based on the [WSGI](https://wsgi.readthedocs.io/en/latest/) standard which focuses on flexibility and efficiency.
 
-Flask será utilizado en _hercules\_sync_ para lanzar un servidor web que escuche a las actualizaciones de las ontologías por parte del sistema de control de versiones.
+Flask will be used in _hercules\_sync_ to launch a web server that will listen to ontology updates coming from the control version system.
 
 #### WikidataIntegrator
-[WikidataIntegrator](https://github.com/SuLab/WikidataIntegrator) es una librería que permite introducir y leer datos sobre entidades en una instancia de Wikibase a través de la API de [MediaWiki](https://www.mediawiki.org/wiki/API:Main_page).
+[WikidataIntegrator](https://github.com/SuLab/WikidataIntegrator) is a library that allows the creation and querying of entity data on a wikibase instance through the [MediaWiki API](https://www.mediawiki.org/wiki/API:Main_page).
+
+This library is used to reflect the modifications --- in the triple store.
 
 Esta librería es utilizada para introducir las modificaciones que se hayan producido en las ontologías en la instancia de Wikibase donde se encuentra el triple-store.
 
@@ -163,28 +153,73 @@ Travis es un servicio de integración continua que puede ser usado para monitori
 #### Codacy
 Codacy es una herramienta de análisis de código estática que permite la monitorización de calidad de proyectos, con soporte para múltiples lenguajes de programación. Devuelve varias métricas de calidad, como por ejemplo la seguridad, compatibilidad, rendimiento o estilo de código.
 
-## Anexos
+### Continuous integration
+In the module repository we follow continuous integration practices in order to fulfill some of the non-functional requirements that need to be met. Before a new version of the module is pushed to the repository, a Travis build is launched where all the tests are executed. In order to be able to upload new changes to the master branch all tests need to pass, and both code coverage and quality returned by Codecov and Codacy must not drop below a given threshold.
 
-### A. Pruebas
-#### A.1. Fase de diseño
-Para probar el módulo las siguientes técnicas serán utilizadas:
-* Técnicas estáticas:
-  * Herramientas de análisis de código estático.
-* Técnicas dinámicas:
-  * Basadas en especificación, con división en clases de equivalencia.
+### Style guides
+The main coding standard that was followed was the [PEP 8](https://www.python.org/dev/peps/pep-0008/) Python style guide. This standard specifies how code written in Python should be formatted (number of characters per line, import formats...) and is widely adopted in the community.
 
-Estas técnicas han sido seleccionadas principalmente debido a la naturaleza del sistema (no hay interfaz gráfica de usuario, por lo que otras técnicas estáticas serían más dificiles de llevar a cabo) y a la experiencia del equipo de desarrollo con la prueba de sistemas relacionados (técnicas basadas en la experiencia no serían apropiadas en este contexto).
+In order to document the code there are also several formatting styles that can be used. In our case, we opted to use the [numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html) due to the readability it provides when compared to other alternatives.
 
-Los siguientes niveles de pruebas serán automatizados y documentados para este sistema:
-* Pruebas unitarias y de componentes.
-* Pruebas de integración.
+## Design Decisions
 
-Además, los siguientes tipos de pruebas serán también automatizados y documentados:
-* Pruebas funcionales.
-* Pruebas de rendimiento.
+### Adapter pattern: Changing the triple-store implementation
 
-#### A.2. Fase de implementación
-Las pruebas implementadas, así como los resultados de éstas se añadirán en esta sección a medida que el desarrollo del sistema avance.
+### Strategy pattern: Creating and using multiple synchronization algorithms
 
-### B. Integración continua
-En el repositorio del módulo llevamos a cabo prácticas de integración continua con el fin de asegurar algunos de los requisitos no funcionales que se deben cumplir. Antes de que una nueva versión del módulo sea pusheada al repositorio, una build de Travis se lanza donde las pruebas son ejecutadas. Con el fin de poder subir los nuevos cambios a la rama principal, todas las pruebas deben pasar, y tanto la cobertura de código cómo la calidad de éste reportada por Codacy no deben bajar por debajo de un umbral especificado.
+## Quality Requirements
+
+### Quality Tree
+
+### Quality Scenarios
+
+## Risks and Technical Debts
+
+## Tests
+### Design phase
+In order to test this module the following techniques will be used:
+* Static techniques:
+  * Static code analysis tools.
+* Dynamic techniques:
+  * Specification-based, with equivalence class partitioning.
+
+These techniques were selected mainly due to the nature of the system (there is no graphical interface, so other static techniques were more difficult to use) and also due to the experience of the development team testing related systems (experience based techniques were not appropriate for this context).
+
+The following test levels will be automatised and documented for this system:
+* Unit and component tests.
+* Integration tests.
+
+### Implementation phase
+All the tests that will be implemented, as well as their respective results will be added to this section as the development of the system goes forward.
+
+## Requirements analysis
+### Functional requirements
+
+| Code        | Description          |
+|:-----------:|:---------------------|
+| FR1         | The system will establish an entry point where the information about the updates of the ontologies will be received. |
+| FR2         | The system will process the information received from the Control Version System with respect to the updates in the ontologies. |
+| FR3         | The system will detect the modifications to perform in the triplestore based on the information about the updates previously processed. |
+| FR4         | The system will connect to a triplestore to reflect the changes from the ontologies. |
+| FR5         | The system will also execute the inverse synchronization: from changes made in the triplestore to the ontology files. |
+| FR6         | The system will use logging tools to detect anomalies in its internal functioning. |
+
+### Non-functional requirements
+
+| Code          | Description          |
+|:-------------:|:---------------------|
+| NFR1      | Security: The system will receive update notifications from the CVS in a safe way with the use of RSA keys. |
+| NFR2      | Security: The system will use the OAuth protocol to update the triplestore. |
+| NFR3 | Compatibility: The system will be at least compatible with versions 3.6, 3.7 and 3.8 of the Python programming language. |
+| NFR4 | Mantenibility: The implementation of the system will follow the PEP8 standard. |
+| NFR5 | Quality: Code coverage of each new released version will be at least 90%. |
+| NFR6 | Extensibility: The system will facilitate the use of different triplestores where the ontologies can be stored. |
+
+## Glossary
+
+| Term                              | Definition                        |
+|:--------------------------------- | --------------------------------- |
+| OAuth | Authorization protocol that describes how unrelated servers can safely allow authorized access between them. |
+| RSA | Public-key cryptosystem used for secure data transmission. |
+| Triplestore | Specific type of database designed for the storage and retrieval of triples with the use of semantic queries. |
+| Version Control System | Software tool that helps a software team with the management of changes to source code. |
