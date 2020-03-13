@@ -7,6 +7,26 @@ install:
   - pip install --progress-bar off -r requirements.txt
   - pip install --progress-bar off pytest-cov pytest-faulthandler codecov
 script:
+  # run tests
   - py.test --cov-report=xml --cov=hercules_sync
+
+  # build documentation
+  - cd docs/sphinx
+  - make html
+  - touch build/html/.nojekyll
+  - cd ../../
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  keep-history: true
+  local_dir: docs/sphinx/build/html
+  committer_from_gh: true
+  name: weso-bot
+  email: thewilly.work@gmail.com
+  on:
+    branch: master
+
 after_success:
   - codecov

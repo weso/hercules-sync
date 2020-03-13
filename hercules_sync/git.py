@@ -133,10 +133,14 @@ class GitFile():
 
     def __str__(self):
         rval = [self.path]
-        rval.append('Added lines: ')
+        rval.append('\nAdded lines: ')
         rval.append(str(self.added_lines))
         rval.append('Removed lines: ')
         rval.append(str(self.removed_lines))
+        rval.append('\nOriginal content: ')
+        rval.append(self.source_content)
+        rval.append('\nFinal content: ')
+        rval.append(self.target_content)
         return '\n'.join(rval)
 
 
@@ -203,6 +207,13 @@ class GitDataLoader():
         Sha of the initial commit before the push.
     after_ref : str
         Sha of the final commit after the push.
+
+    Examples
+    --------
+    >>> X = 'a'
+    'a'
+    >>> y = 2
+    2
     """
 
     NO_COMMIT_MSG = "No commit found for the ref"
