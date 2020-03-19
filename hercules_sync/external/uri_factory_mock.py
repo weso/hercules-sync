@@ -26,3 +26,8 @@ class URIFactory():
         URIFactory.instance.state[label] = wb_uri
         with open(URIS_FILE, 'wb') as f:
             pickle.dump(URIFactory.instance.state, f)
+
+    def reset_factory(self):
+        URIFactory.instance.state = {}
+        with open(URIS_FILE, 'wb') as f:
+            pickle.dump(URIFactory.instance.state, f)
