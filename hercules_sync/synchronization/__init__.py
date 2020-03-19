@@ -1,4 +1,4 @@
-from .operations import AdditionOperation, RemoveOperation, SyncOperation
+from .operations import AdditionOperation, RemovalOperation, SyncOperation
 from .algorithms import BaseSyncAlgorithm, GraphDiffSyncAlgorithm, \
                         NaiveSyncAlgorithm, RDFSyncAlgorithm
 from .ontology_synchronizer import OntologySynchronizer
@@ -8,6 +8,6 @@ __all__ = [
     'BaseSyncAlgorithm',
     'NaiveSyncAlgorithm',
     'RDFSyncAlgorithm',
-    'RemoveOperation',
+    'RemovalOperation',
     'SyncOperation',
 ]
