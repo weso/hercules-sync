@@ -6,7 +6,7 @@ from rdflib.compare import graph_diff, to_isomorphic
 from rdflib.graph import Graph
 
 from hercules_sync.git import GitFile
-from . import AdditionOperation, RemoveOperation, SyncOperation
+from . import AdditionOperation, RemovalOperation, SyncOperation
 
 class BaseSyncAlgorithm(ABC):
     """ Base class for all synchronization algorithms.
@@ -47,7 +47,7 @@ class GraphDiffSyncAlgorithm(BaseSyncAlgorithm):
                 for triple in graph]
 
     def _create_remove_ops_from(self, graph):
-        return [RemoveOperation(triple[0], triple[1], triple[2])
+        return [RemovalOperation(triple[0], triple[1], triple[2])
                 for triple in graph]
 
 class RDFSyncAlgorithm(BaseSyncAlgorithm):

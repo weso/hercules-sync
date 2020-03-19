@@ -32,7 +32,6 @@ class SyncOperation(ABC):
             Result given by the TripleStoreManager after the modification.
 
         """
-        pass
 
     def __str__(self):
         return f"{self._triple_info.subject} \
@@ -46,6 +45,9 @@ class AdditionOperation(SyncOperation):
     def __str__(self):
         return "AdditionOperation: " + super(AdditionOperation, self).__str__()
 
-class RemoveOperation(SyncOperation):
+class RemovalOperation(SyncOperation):
     def execute(self, triple_store: TripleStoreManager) -> ModificationResult:
         triple_store.remove_triple(self._triple_info)
+
+    def __str__(self):
+        return "RemovalOperation: " + super(RemovalOperation, self).__str__()

@@ -22,7 +22,7 @@ def element2wbitem(element):
 #
 rdflib2triple_element = {
     URIRef: URIElement,
-    Literal:
+    Literal: LiteralElement
 }
 
 #
