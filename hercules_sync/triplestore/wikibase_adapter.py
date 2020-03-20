@@ -58,7 +58,7 @@ class WikibaseAdapter(TripleStoreManager):
 
     def _create_statement(self, subject: TripleElement, predicate: TripleElement,
                           objct: TripleElement):
-        statement = objct.to_wdi_datatype(value=objct.id, prop_nr=predicate.id)
+        statement = objct.to_wdi_datatype(prop_nr=predicate.id)
         data = [statement]
         litem = self._local_item_engine(subject.id, data=data)
         litem.write(self._local_login)
@@ -89,7 +89,7 @@ class WikibaseAdapter(TripleStoreManager):
             logging.warning("URI %s doesn't contain a '#' separator. Default "
                             "label can't be inferred.", uriref)
         else:
-            label = uriref.split("#")[-1]
+            label = uriref.uri.split("#")[-1]
             entity.set_label(label)
         entity_id = entity.write(self._local_login, entity_type=uriref.etype,
                                  property_datatype=property_datatype)
@@ -100,22 +100,26 @@ class WikibaseAdapter(TripleStoreManager):
         logging.debug("Changing label @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_label(objct.content, objct.lang)
+        entity.write(self._local_login)
 
     def _set_description(self, subject, objct):
         logging.debug("Removing description @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_description(objct.content, objct.lang)
+        entity.write(self._local_login)
 
     def _remove_label(self, subject, objct):
         assert hasattr(objct, 'lang')
         logging.debug("Removing label @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_label("", objct.lang)
+        entity.write(self._local_login)
 
     def _remove_description(self, subject, objct):
         logging.debug("Removing description @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_description("", objct.lang)
+        entity.write(self._local_login)
 
 
 def get_uri_for(label):

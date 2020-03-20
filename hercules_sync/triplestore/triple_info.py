@@ -1,8 +1,12 @@
 from rdflib.term import Literal, URIRef
+from wikidataintegrator.wdi_core import WDBaseDataType, WDItemID, WDMonolingualText, \
+                                        WDProperty, WDString
 
 from abc import abstractmethod, ABC
+from functools import partial
+from typing import Union
 
-from ..util import mappings
+from ..util.error import InvalidArgumentError
 
 class TripleElement(ABC):
     @classmethod
@@ -17,7 +21,7 @@ class TripleElement(ABC):
         return res
 
     @abstractmethod
-    def to_wdi_datatype(self):
+    def to_wdi_datatype(self, **kwargs):
         pass
 
     def __str__(self):
@@ -29,41 +33,73 @@ class URIElement(TripleElement):
     def __init__(self, uri: str, etype='item'):
         self.uri = uri
         self.etype = etype
-        if etype not in self.VALID_ETYPES:
-            raise SomeError('Invalid etype received, valid values are: ', self.VALID_ETYPES)
+        self.id = None
+
+    @property
+    def etype(self):
+        return self._etype
+
+    @etype.setter
+    def etype(self, new_val):
+        if new_val not in self.VALID_ETYPES:
+            raise InvalidArgumentError('Invalid etype received, valid values are: ',
+                                       self.VALID_ETYPES)
+        self._etype = new_val
+        return self._etype
+
+    @property
+    def wdi_class(self):
+        assert self.etype in self.VALID_ETYPES
+        return WDItemID if self.etype == 'item' else WDProperty
 
     @property
     def wdi_dtype(self):
-        return 'wikibase-item'
+        return self.wdi_class.DTYPE
 
-    def to_wdi_datatype(self) -> WDBaseDataType:
-        if self.etype == 'item':
-            return WDItemID
-        elif self.etype == 'property':
-            return WDProperty
+    def to_wdi_datatype(self, **kwargs) -> Union[WDItemID, WDProperty]:
+        return self.wdi_class(value=self.id, **kwargs)
+
+    def __iter__(self):
+        return self.uri.__iter__()
+
+    def __str__(self):
+        return f"URIElement: {self.uri} - Type: {self.etype}"
 
 class LiteralElement(TripleElement):
     def __init__(self, content, datatype=None, lang=None):
         self.content = content
         if datatype and lang:
-            raise SomeError("Both datatype and language can't be set.")
+            raise InvalidArgumentError("Both datatype and language can't be set.")
         self.datatype = datatype
         self.lang = lang
+        self._wdi_class = None
+
+    @property
+    def wdi_class(self):
+        if self._wdi_class:
+            return self._wdi_class
+
+        if self.lang:
+            self._wdi_class = WDMonolingualText
+        elif self.datatype:
+            raise NotImplementedError("Use of xsd:schema datatypes is not implemented yet.")
+        else:
+            self._wdi_class = WDString
+        return self.wdi_class
 
     @property
     def wdi_dtype(self):
-        return 'wikibase-item'
+        return self.wdi_class.DTYPE
 
-    def to_wdi_datatype(self):
+    def to_wdi_datatype(self, **kwargs):
+        print(kwargs)
+        print(self.wdi_class)
         if self.lang:
-            return WDMonolingual
+            return self.wdi_class.__init__(value=self.content, language=self.lang, *args, *kwargs)
         elif self.datatype:
-            ...
+            raise NotImplementedError("Use of xsd:schema datatypes is not implemented yet.")
         else:
-            return WDString
-
-    def wb_datatype(self):
-        pass
+            return self.wdi_class.__init__(value=self.content, *args, **kwargs)
 
 class TripleInfo():
     def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement):
@@ -77,3 +113,7 @@ class TripleInfo():
         predicate = TripleElement.from_rdflib(rdflib_triple[1])
         objct = TripleElement.from_rdflib(rdflib_triple[2])
         return TripleInfo(subject, predicate, objct)
+
+    @property
+    def content(self):
+        return (self.subject, self.predicate, self.object)

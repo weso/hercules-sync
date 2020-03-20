@@ -1,8 +1,6 @@
 from rdflib.term import Literal, URIRef
 from rdflib.namespace import XSD
 
-from ..triplestore import URIElement, LiteralElement
-
 def literal2element(literal):
     """ Converts a rdflib literal to a triple element.
 
@@ -21,15 +19,5 @@ def literal2element(literal):
 def uriref2wbitem(element):
     pass
 
-def literal2wbitem()
-
-#
-rdflib2triple_element = {
-    URIRef: URIElement,
-    Literal: LiteralElement
-}
-
-#
-datatype2wbitem = {
-
-}
+def literal2wbitem():
+    pass
