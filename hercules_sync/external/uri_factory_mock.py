@@ -9,7 +9,10 @@ class URIFactory():
     class __URIFactory():
         def __init__(self):
             with open(URIS_FILE, 'rb') as f:
-                self.state = pickle.load(f)
+                try:
+                    self.state = pickle.load(f)
+                except EOFError:
+                    self.state = {}
                 print(self.state)
 
     instance = None
@@ -17,6 +20,7 @@ class URIFactory():
     def __init__(self):
         if not URIFactory.instance:
             URIFactory.instance = URIFactory.__URIFactory()
+
 
     def get_uri(self, label):
         return URIFactory.instance.state[label] \
