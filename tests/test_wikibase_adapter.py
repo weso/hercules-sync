@@ -55,8 +55,8 @@ def triples():
                                LiteralElement('Jose Emilio Labra Gayo', lang='en')),
         'label_ko': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
                                LiteralElement('라브라', lang='ko')),
-        'no_label': TripleInfo(URIElement(example_no_label + 'test'), URIElement(example + 'x'),
-                               LiteralElement('another test')),
+        'no_label': TripleInfo(URIElement(example_no_label + 'test'), URIElement(RDFS_LABEL),
+                               LiteralElement('a test', lang='en')),
         'wditemid': TripleInfo(URIElement(example + 'Person'), URIElement(example + 'livesIn'),
                                URIElement(example + 'City')),
         'wdstring': TripleInfo(URIElement(example + 'Person'), URIElement(example + 'altName'),
@@ -112,6 +112,26 @@ def test_existing_entity_is_not_created_again(mocked_adapter, triples):
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
 
+def test_label_cant_be_inferred(mocked_adapter, triples):
+    triple = triples['no_label']
+    mocked_adapter.create_triple(triple)
+    item_engine_calls = [
+        # create subject
+        mock.call(new_item=True),
+        # create label for item Q1
+        mock.call('Q1')
+    ]
+    mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls, any_order=False)
+
+    writer = mocked_adapter._local_item_engine(None)
+    set_label_calls = [
+        # label created with rdfs:label predicate
+        mock.call('a test', 'en')
+    ]
+    writer.set_label.assert_has_calls(set_label_calls, any_order=False)
+    assert writer.set_label.call_count == 1
+
+
 def test_remove_triple(mocked_adapter, triples):
     triple = triples['wditemid']
     mocked_adapter.remove_triple(triple)
@@ -124,6 +144,7 @@ def test_remove_triple(mocked_adapter, triples):
         mock.call('Q1', data=[wdi_core.WDBaseDataType.delete_statement('P2')])
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls, any_order=False)
+    assert mocked_adapter._local_item_engine.call_count == 3
 
     writer = mocked_adapter._local_item_engine(None)
     login = mocked_adapter._local_login
