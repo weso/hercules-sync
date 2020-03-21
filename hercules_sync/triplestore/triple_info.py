@@ -14,7 +14,7 @@ class TripleElement(ABC):
         elmnt_type = type(rdflib_element)
         res = None
         if elmnt_type == URIRef:
-            res = URIElement(rdflib_element.uri)
+            res = URIElement(str(rdflib_element))
         elif elmnt_type == Literal:
             res = LiteralElement(rdflib_element.value, rdflib_element.datatype,
                                  rdflib_element.language)
@@ -22,9 +22,6 @@ class TripleElement(ABC):
 
     @abstractmethod
     def to_wdi_datatype(self, **kwargs):
-        pass
-
-    def __str__(self):
         pass
 
 class URIElement(TripleElement):
@@ -104,6 +101,14 @@ class LiteralElement(TripleElement):
             raise NotImplementedError("Use of xsd:schema datatypes is not implemented yet.")
         else:
             return self.wdi_class(value=self.content, **kwargs)
+
+    def __str__(self):
+        res = [f"LiteralElement: {self.content}"]
+        if self.lang:
+            res.append(f" - Language: {self.lang}")
+        if self.datatype:
+            res.append(f" - DataType: {self.datatype}")
+        return ''.join(res)
 
 class TripleInfo():
     def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement):
