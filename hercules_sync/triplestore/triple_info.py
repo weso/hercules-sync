@@ -102,6 +102,12 @@ class LiteralElement(TripleElement):
         else:
             return self.wdi_class(value=self.content, **kwargs)
 
+    def __eq__(self, other):
+        if not isinstance(other, LiteralElement):
+            return False
+        return self.content == other.content and self.lang == other.lang \
+               and self.datatype == other.datatype
+
     def __str__(self):
         res = [f"LiteralElement: {self.content}"]
         if self.lang:
@@ -126,3 +132,10 @@ class TripleInfo():
     @property
     def content(self):
         return (self.subject, self.predicate, self.object)
+
+    def __eq__(self, other):
+        if not isinstance(other, TripleInfo):
+            return False
+
+        return self.subject == other.subject and self.predicate == other.predicate \
+               and self.object == other.object
