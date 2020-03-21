@@ -4,7 +4,7 @@ from wikidataintegrator.wdi_core import WDBaseDataType, WDItemID, WDMonolingualT
 
 from abc import abstractmethod, ABC
 from functools import partial
-from typing import Union
+from typing import Type, Union
 
 from ..util.error import InvalidArgumentError
 
@@ -40,7 +40,9 @@ class URIElement(TripleElement):
         return self._etype
 
     @etype.setter
-    def etype(self, new_val):
+    def etype(self, new_val: str) -> str:
+        """
+        """
         if new_val not in self.VALID_ETYPES:
             raise InvalidArgumentError('Invalid etype received, valid values are: ',
                                        self.VALID_ETYPES)
@@ -48,16 +50,25 @@ class URIElement(TripleElement):
         return self._etype
 
     @property
-    def wdi_class(self):
+    def wdi_class(self) -> Union[Type[WDItemID], Type[WDProperty]]:
+        """ Returns the wikidataintegrator class of the element
+        """
         assert self.etype in self.VALID_ETYPES
         return WDItemID if self.etype == 'item' else WDProperty
 
     @property
-    def wdi_dtype(self):
+    def wdi_dtype(self) -> str:
+        """ Returns the wikidataintegrator DTYPE of this element.
+        """
         return self.wdi_class.DTYPE
 
     def to_wdi_datatype(self, **kwargs) -> Union[WDItemID, WDProperty]:
+        """ Returns an instance of the wdi_core class of this element
+        """
         return self.wdi_class(value=self.id, **kwargs)
+
+    def __eq__(self, val):
+        return self.uri == val
 
     def __iter__(self):
         return self.uri.__iter__()
@@ -72,34 +83,27 @@ class LiteralElement(TripleElement):
             raise InvalidArgumentError("Both datatype and language can't be set.")
         self.datatype = datatype
         self.lang = lang
-        self._wdi_class = None
 
     @property
-    def wdi_class(self):
-        if self._wdi_class:
-            return self._wdi_class
-
+    def wdi_class(self) -> Type[WDBaseDataType]:
         if self.lang:
-            self._wdi_class = WDMonolingualText
+            return WDMonolingualText
         elif self.datatype:
             raise NotImplementedError("Use of xsd:schema datatypes is not implemented yet.")
         else:
-            self._wdi_class = WDString
-        return self.wdi_class
+            return WDString
 
     @property
-    def wdi_dtype(self):
+    def wdi_dtype(self) -> str:
         return self.wdi_class.DTYPE
 
-    def to_wdi_datatype(self, **kwargs):
-        print(kwargs)
-        print(self.wdi_class)
+    def to_wdi_datatype(self, **kwargs) -> WDBaseDataType:
         if self.lang:
-            return self.wdi_class.__init__(value=self.content, language=self.lang, *args, *kwargs)
+            return self.wdi_class(value=self.content, language=self.lang, *kwargs)
         elif self.datatype:
             raise NotImplementedError("Use of xsd:schema datatypes is not implemented yet.")
         else:
-            return self.wdi_class.__init__(value=self.content, *args, **kwargs)
+            return self.wdi_class(value=self.content, **kwargs)
 
 class TripleInfo():
     def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement):

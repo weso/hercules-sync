@@ -30,9 +30,10 @@ class WikibaseAdapter(TripleStoreManager):
             self._set_description(subject, objct)
             return
 
-        objct.id = self._get_wb_id_of(objct)
+        if isinstance(objct, URIElement):
+            objct.id = self._get_wb_id_of(objct)
 
-        # TODO: parse property datatype from Python type of property in triple_info
+        # predicates always have etype 'property'. maybe move this to reasoner when implemented?
         predicate.etype = 'property'
         predicate.id = self._get_wb_id_of(predicate, objct.wdi_dtype)
 
@@ -53,6 +54,7 @@ class WikibaseAdapter(TripleStoreManager):
             self._remove_description(subject, objct)
             return
 
+        predicate.etype = 'property'
         predicate.id = self._get_wb_id_of(predicate, objct.wdi_dtype)
         self._remove_statement(subject, predicate, objct)
 
@@ -65,13 +67,14 @@ class WikibaseAdapter(TripleStoreManager):
 
     def _remove_statement(self, subject: TripleElement, predicate: TripleElement,
                           objct: TripleElement):
-        statement_to_remove = objct.wdi_class.delete_statement(predicate.id)
+        print(predicate.id)
+        statement_to_remove = wdi_core.WDBaseDataType.delete_statement(predicate.id)
         data = [statement_to_remove]
         litem = self._local_item_engine(subject.id, data=data)
         litem.write(self._local_login)
 
     def _get_wb_id_of(self, uriref: URIElement, property_datatype='string'):
-        wb_uri = get_uri_for(uriref)
+        wb_uri = get_uri_for(uriref.uri)
         if wb_uri is not None:
             logging.debug("Id of %s in wikibase: %s", uriref, wb_uri)
             return wb_uri
@@ -80,7 +83,7 @@ class WikibaseAdapter(TripleStoreManager):
         entity_id = self._create_new_wb_item(uriref, property_datatype)
 
         # update uri factory with new item
-        post_uri(uriref, entity_id)
+        post_uri(uriref.uri, entity_id)
         return entity_id
 
     def _create_new_wb_item(self, uriref: URIElement, property_datatype: str):
