@@ -7,6 +7,7 @@ Jinja2==2.11.1
 lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
+pandas==1.0.1
 recommonmark==0.6.0
 six==1.14.0
 Sphinx==2.4.3
