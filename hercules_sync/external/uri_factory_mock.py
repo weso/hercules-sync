@@ -13,7 +13,6 @@ class URIFactory():
                     self.state = pickle.load(f)
                 except EOFError:
                     self.state = {}
-                print(self.state)
 
     instance = None
 
