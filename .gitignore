@@ -10,3 +10,8 @@ __pycache__/
 .DS_Store
 
 docs/sphinx/build
+
+# Codecov
+.coverage
+coverage.xml
+run_codecov.sh
