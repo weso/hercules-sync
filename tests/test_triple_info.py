@@ -85,6 +85,12 @@ def test_literal_wdi_dtype(string_literal, monolingual_literal, datatype_literal
     with pytest.raises(NotImplementedError):
         _ = datatype_literal.wdi_dtype
 
+def test_literal_equals(string_literal, monolingual_literal, datatype_literal):
+    assert 'test' != string_literal
+    assert LiteralElement('test') == string_literal
+    assert LiteralElement('목소리', lang='ko') == monolingual_literal
+    assert LiteralElement('12', datatype=XSD.integer) == datatype_literal
+
 def test_uri_init(prop_uri):
     assert prop_uri.uri == 'http://example.org/onto#livesIn'
     assert prop_uri.etype == 'property'

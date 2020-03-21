@@ -1,20 +1,20 @@
 from abc import ABC, abstractmethod
 
-from ..triplestore import ModificationResult, TripleStoreManager, TripleInfo
+from ..triplestore import ModificationResult, TripleStoreManager, TripleElement, TripleInfo
 
 class SyncOperation(ABC):
     """ Base class of all synchronization operations.
 
     Parameters
     ----------
-    sub : str
+    sub : TripleElement
         Subject of the triple to be synchronized.
-    pred : str
+    pred : TripleElement
         Predicate of the triple to be synchronized.
-    obj : str
+    obj : TripleElement
         Object of the triple to be synchronized.
     """
-    def __init__(self, sub, pred, obj):
+    def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement):
         self._triple_info = TripleInfo(sub, pred, obj)
 
     @abstractmethod
@@ -34,9 +34,8 @@ class SyncOperation(ABC):
         """
 
     def __str__(self):
-        return f"{self._triple_info.subject} \
-                 {self._triple_info.predicate} \
-                 {self._triple_info.object}"
+        return f"{self._triple_info.subject} - {self._triple_info.predicate} " \
+               + f"- {self._triple_info.object}"
 
 class AdditionOperation(SyncOperation):
     def execute(self, triple_store: TripleStoreManager) -> ModificationResult:
@@ -45,9 +44,21 @@ class AdditionOperation(SyncOperation):
     def __str__(self):
         return "AdditionOperation: " + super(AdditionOperation, self).__str__()
 
+    def __eq__(self, other):
+        if not isinstance(other, AdditionOperation):
+            return False
+
+        return self._triple_info == other._triple_info
+
 class RemovalOperation(SyncOperation):
     def execute(self, triple_store: TripleStoreManager) -> ModificationResult:
         triple_store.remove_triple(self._triple_info)
 
     def __str__(self):
         return "RemovalOperation: " + super(RemovalOperation, self).__str__()
+
+    def __eq__(self, other):
+        if not isinstance(other, RemovalOperation):
+            return False
+
+        return self._triple_info == other._triple_info
