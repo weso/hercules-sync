@@ -6,6 +6,7 @@ from rdflib.compare import graph_diff, to_isomorphic
 from rdflib.graph import Graph
 
 from hercules_sync.git import GitFile
+from hercules_sync.triplestore import TripleInfo
 from . import AdditionOperation, RemovalOperation, SyncOperation
 
 class BaseSyncAlgorithm(ABC):
@@ -24,11 +25,10 @@ class BaseSyncAlgorithm(ABC):
     def do_algorithm(self, file: GitFile) -> List[SyncOperation]:
         """
         """
-        pass
 
 class NaiveSyncAlgorithm(BaseSyncAlgorithm):
     def do_algorithm(self, file: GitFile) -> List[SyncOperation]:
-        pass
+        raise NotImplementedError("NaiveSync algorithm has not been implemented yet.")
 
 class GraphDiffSyncAlgorithm(BaseSyncAlgorithm):
     def do_algorithm(self, file: GitFile) -> List[SyncOperation]:
@@ -42,14 +42,14 @@ class GraphDiffSyncAlgorithm(BaseSyncAlgorithm):
         removals_ops = self._create_remove_ops_from(removals_graph)
         return additions_ops + removals_ops
 
-    def _create_add_ops_from(self, graph):
-        return [AdditionOperation(triple[0], triple[1], triple[2])
+    def _create_add_ops_from(self, graph: Graph) -> List[AdditionOperation]:
+        return [AdditionOperation(*TripleInfo.from_rdflib(triple).content)
                 for triple in graph]
 
-    def _create_remove_ops_from(self, graph):
-        return [RemovalOperation(triple[0], triple[1], triple[2])
+    def _create_remove_ops_from(self, graph: Graph) -> List[RemovalOperation]:
+        return [RemovalOperation(*TripleInfo.from_rdflib(triple).content)
                 for triple in graph]
 
 class RDFSyncAlgorithm(BaseSyncAlgorithm):
     def do_algorithm(self, file: GitFile) -> List[SyncOperation]:
-        pass
+        raise NotImplementedError("RDFSync algorithm has not been implemented yet.")
