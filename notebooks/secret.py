@@ -1,0 +1,2 @@
+USERNAME = "WikibaseAdmin"
+PASSWORD = "WikibaseDockerAdminPass"
