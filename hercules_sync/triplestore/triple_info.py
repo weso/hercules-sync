@@ -3,14 +3,31 @@ from wikidataintegrator.wdi_core import WDBaseDataType, WDItemID, WDMonolingualT
                                         WDProperty, WDString
 
 from abc import abstractmethod, ABC
-from functools import partial
 from typing import Type, Union
 
 from ..util.error import InvalidArgumentError
 
 class TripleElement(ABC):
+    """ Element of a semantic triple.
+
+    This abstract class represents the common behaviour exposed by an element
+    of a semantic triple.
+    """
+
     @classmethod
     def from_rdflib(cls, rdflib_element):
+        """ Create a TripleElement from a rdflib term.
+
+        Parameters
+        ----------
+        rdflib_element : :obj:`rdflib.term`
+            Rdflib element used to create the TripleElement.
+
+        Returns
+        -------
+        :obj:`TripleElement`
+            TripleElement equivalent to the rdflib term.
+        """
         elmnt_type = type(rdflib_element)
         res = None
         if elmnt_type == URIRef:
@@ -22,9 +39,23 @@ class TripleElement(ABC):
 
     @abstractmethod
     def to_wdi_datatype(self, **kwargs):
-        pass
+        """ Return a wdi instance representing the current element.
+
+        Returns
+        -------
+        :obj:`wikidataintegrator.wdi_core.WDBaseDataType`
+            Instance of a wdi datatype that represents this TripeElement.
+        """
 
 class URIElement(TripleElement):
+    """ TripleElement class that represents URIs from a triple.
+
+    Parameters
+    ----------
+    uri : str
+        URI of the element.
+    """
+
     VALID_ETYPES = ['item', 'property']
 
     def __init__(self, uri: str, etype='item'):
@@ -33,13 +64,19 @@ class URIElement(TripleElement):
         self.id = None
 
     @property
-    def etype(self):
+    def etype(self) -> str:
+        """ Get the entity type of this element.
+
+        Returns
+        -------
+        str
+            'item' if the element corresponds to a wikibase item and 'property'
+            if it corresponds to a wikibase property.
+        """
         return self._etype
 
     @etype.setter
     def etype(self, new_val: str) -> str:
-        """
-        """
         if new_val not in self.VALID_ETYPES:
             raise InvalidArgumentError('Invalid etype received, valid values are: ',
                                        self.VALID_ETYPES)
@@ -48,7 +85,7 @@ class URIElement(TripleElement):
 
     @property
     def wdi_class(self) -> Union[Type[WDItemID], Type[WDProperty]]:
-        """ Returns the wikidataintegrator class of the element
+        """ Returns the wikidataintegrator class of the element.
         """
         assert self.etype in self.VALID_ETYPES
         return WDItemID if self.etype == 'item' else WDProperty
@@ -60,8 +97,6 @@ class URIElement(TripleElement):
         return self.wdi_class.DTYPE
 
     def to_wdi_datatype(self, **kwargs) -> Union[WDItemID, WDProperty]:
-        """ Returns an instance of the wdi_core class of this element
-        """
         return self.wdi_class(value=self.id, **kwargs)
 
     def __eq__(self, val):
@@ -74,6 +109,23 @@ class URIElement(TripleElement):
         return f"URIElement: {self.uri} - Type: {self.etype}"
 
 class LiteralElement(TripleElement):
+    """ TripleElement class that represents a literal from a triple.
+
+    Parameters
+    ----------
+    content : any
+        Content of the literal.
+    datatype : str
+        URI of the xsd schema of the literal's datatype.
+    lang : str
+        If the literal is a language tagged string, language of it.
+
+    Raises
+    ------
+    InvalidArgumentError
+        If both the datatype and lang parameters are provided.
+    """
+
     def __init__(self, content, datatype=None, lang=None):
         self.content = content
         if datatype and lang:
@@ -117,6 +169,18 @@ class LiteralElement(TripleElement):
         return ''.join(res)
 
 class TripleInfo():
+    """ Encapsulate the elements of a semantic triple.
+
+    Parameters
+    ----------
+    sub : :obj:`TripleElement`
+        Subject of the triple.
+    pred : :obj:`TripleElement`
+        Predicate of the triple.
+    obj : :obj:`TripleElement`
+        Object of the triple.
+    """
+
     def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement):
         self.subject = sub
         self.predicate = pred
@@ -131,6 +195,13 @@ class TripleInfo():
 
     @property
     def content(self):
+        """ Return each element of the triple in a tuple.
+
+        Returns
+        -------
+        tuple
+            Tuple of three elements, containing the subject, predicate and object of the triple.
+        """
         return (self.subject, self.predicate, self.object)
 
     def __eq__(self, other):

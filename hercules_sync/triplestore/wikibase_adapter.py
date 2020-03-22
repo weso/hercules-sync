@@ -10,6 +10,22 @@ from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT
 logger = logging.getLogger(__name__)
 
 class WikibaseAdapter(TripleStoreManager):
+    """ Adapter to execute operations on a wikibase instance.
+
+    Parameters
+    ----------
+    mediawiki_api_url : str
+        String with the url where the mediawiki API is accesible.
+
+    sparql_endpoint_url : str
+        String with the url where the SPARQL endpoint of the instance is available.
+
+    username : str
+        Username of the account that is going to execute the operations.
+
+    password : str
+        Password of the account.
+    """
 
     def __init__(self, mediawiki_api_url, sparql_endpoint_url, username, password):
         self._local_item_engine = wdi_core.WDItemEngine. \
@@ -39,9 +55,6 @@ class WikibaseAdapter(TripleStoreManager):
 
         self._create_statement(subject, predicate, objct)
 
-    def modify_triple(self, triple_info: TripleInfo) -> ModificationResult:
-        pass
-
     def remove_triple(self, triple_info: TripleInfo) -> ModificationResult:
         subject, predicate, objct = triple_info.content
         subject.id = self._get_wb_id_of(subject)
@@ -56,7 +69,7 @@ class WikibaseAdapter(TripleStoreManager):
 
         predicate.etype = 'property'
         predicate.id = self._get_wb_id_of(predicate, objct.wdi_dtype)
-        self._remove_statement(subject, predicate, objct)
+        self._remove_statement(subject, predicate)
 
     def _create_statement(self, subject: TripleElement, predicate: TripleElement,
                           objct: TripleElement):
@@ -65,8 +78,7 @@ class WikibaseAdapter(TripleStoreManager):
         litem = self._local_item_engine(subject.id, data=data)
         litem.write(self._local_login)
 
-    def _remove_statement(self, subject: TripleElement, predicate: TripleElement,
-                          objct: TripleElement):
+    def _remove_statement(self, subject: TripleElement, predicate: TripleElement):
         statement_to_remove = wdi_core.WDBaseDataType.delete_statement(predicate.id)
         data = [statement_to_remove]
         litem = self._local_item_engine(subject.id, data=data)
