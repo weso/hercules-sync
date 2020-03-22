@@ -7,14 +7,17 @@ Jinja2==2.11.1
 lazy-object-proxy==1.4.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
+pandas==1.0.1
 recommonmark==0.6.0
 six==1.14.0
 Sphinx==2.4.3
 sphinx-rtd-theme==0.4.3
 sphinx-markdown-tables==0.0.12
 stsci-rtd-theme==0.0.2
+tqdm==4.42.1
 typed-ast==1.4.1
 unidiff==0.5.5
 urllib3==1.25.8
 Werkzeug==0.16.1
+wikidataintegrator==0.6.0
 wrapt==1.11.2
