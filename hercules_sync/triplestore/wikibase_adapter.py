@@ -75,7 +75,7 @@ class WikibaseAdapter(TripleStoreManager):
                           objct: TripleElement):
         statement = objct.to_wdi_datatype(prop_nr=predicate.id)
         data = [statement]
-        litem = self._local_item_engine(subject.id, data=data)
+        litem = self._local_item_engine(subject.id, data=data, append_value=[predicate.id])
         litem.write(self._local_login)
 
     def _remove_statement(self, subject: TripleElement, predicate: TripleElement):

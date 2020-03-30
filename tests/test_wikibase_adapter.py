@@ -70,7 +70,8 @@ def test_create_triple(mocked_adapter, triples):
         mock.call(new_item=True),
         mock.call(new_item=True),
         mock.call(new_item=True),
-        mock.call('Q1', data=[new_triple.object.to_wdi_datatype(prop_nr=new_triple.predicate.id)])
+        mock.call('Q1', data=[new_triple.object.to_wdi_datatype(prop_nr=new_triple.predicate.id)],
+                  append_value=[new_triple.predicate.id])
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls, any_order=False)
 
@@ -104,11 +105,13 @@ def test_existing_entity_is_not_created_again(mocked_adapter, triples):
         # predicate from triple_a
         mock.call(new_item=True),
         # statement from triple_a
-        mock.call('Q1', data=[triple_a.object.to_wdi_datatype(prop_nr=triple_a.predicate.id)]),
+        mock.call('Q1', data=[triple_a.object.to_wdi_datatype(prop_nr=triple_a.predicate.id)],
+                  append_value=[triple_a.predicate.id]),
         # predicate from triple_b
         mock.call(new_item=True),
         # statement from triple_b
-        mock.call('Q1', data=[triple_b.object.to_wdi_datatype(prop_nr=triple_b.predicate.id)])
+        mock.call('Q1', data=[triple_b.object.to_wdi_datatype(prop_nr=triple_b.predicate.id)],
+                  append_value=[triple_b.predicate.id])
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
 
