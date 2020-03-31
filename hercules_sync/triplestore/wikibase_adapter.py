@@ -141,8 +141,14 @@ class WikibaseAdapter(TripleStoreManager):
         assert hasattr(objct, 'lang')
         logging.debug("Removing alias @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
-        entity.set_aliases("", objct.lang)
-        entity.write(self._local_login)
+        curr_aliases = entity.get_aliases(objct.lang)
+        try:
+            curr_aliases.remove(objct.content)
+            entity.set_aliases(curr_aliases, objct.lang, append=False)
+            entity.write(self._local_login)
+        except ValueError:
+            logging.warning("Alias %s@%s didnt exist for object %s. Skipping removal...",
+                            objct.content, objct.lang, subject.id)
 
     def _remove_label(self, subject, objct):
         assert hasattr(objct, 'lang')

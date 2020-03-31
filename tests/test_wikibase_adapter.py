@@ -51,6 +51,8 @@ def triples():
                               LiteralElement('individual', lang='en')),
         'alias_es': TripleInfo(URIElement(example + 'Person'), URIElement(SKOS_ALTLABEL),
                               LiteralElement('individuo', lang='es')),
+        'alias_es_2': TripleInfo(URIElement(example + 'Person'), URIElement(SKOS_ALTLABEL),
+                              LiteralElement('sujeto', lang='es')),
         'desc_en': TripleInfo(URIElement(example + 'Person'), URIElement(RDFS_COMMENT),
                               LiteralElement('A person', lang='en')),
         'desc_es': TripleInfo(URIElement(example + 'Person'), URIElement(RDFS_COMMENT),
@@ -164,12 +166,16 @@ def test_remove_triple(mocked_adapter, triples):
 
 def test_remove_alias(mocked_adapter, triples):
     alias_es = triples['alias_es']
+    alias_es_2 = triples['alias_es_2']
     mocked_adapter.create_triple(alias_es)
+    mocked_adapter.create_triple(alias_es_2)
     mocked_adapter.remove_triple(alias_es)
     item_engine_calls = [
         # create subject
         mock.call(new_item=True),
-        # set alias for item Q1
+        # set alias for item Q1 (es)
+        mock.call('Q1'),
+        # set alias for item Q1 (es2)
         mock.call('Q1'),
         # remove alias for item Q1
         mock.call('Q1')
@@ -178,12 +184,32 @@ def test_remove_alias(mocked_adapter, triples):
 
     writer = mocked_adapter._local_item_engine(None)
     set_alias_calls = [
-        # create triple
         mock.call(['individuo'], 'es'),
-        # remove triple
-        mock.call('', 'es')
+        mock.call(['sujeto'], 'es'),
+        mock.call(writer.get_aliases(), 'es', append=False)
     ]
     writer.set_aliases.assert_has_calls(set_alias_calls, any_order=False)
+
+    get_alias_calls = [mock.call('es')]
+    writer.get_aliases.assert_has_calls(get_alias_calls, any_order=False)
+
+def test_remove_nonexisting_alias(mocked_adapter, triples):
+    alias_es = triples['alias_es']
+    mocked_adapter.remove_triple(alias_es)
+    item_engine_calls = [
+        # create subject
+        mock.call(new_item=True)
+    ]
+    mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
+
+    writer = mocked_adapter._local_item_engine(None)
+    set_alias_calls = []
+    writer.set_aliases.assert_has_calls(set_alias_calls, any_order=False)
+
+    get_alias_calls = [
+        mock.call('es')
+    ]
+    writer.get_aliases.assert_has_calls(get_alias_calls, any_order=False)
 
 def test_remove_description(mocked_adapter, triples):
     desc_es = triples['desc_es']
