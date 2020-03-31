@@ -10,5 +10,10 @@ OWL_BASE = 'http://www.w3.org/2002/07/owl#'
 OWL_CLASS = f'{OWL_BASE}Class'
 OWL_DISJOINT_WITH = f'{OWL_BASE}disjointWith'
 
+SCHEMA_BASE = 'https://schema.org/'
+SCHEMA_DESCRIPTION = f'{SCHEMA_BASE}description'
+SCHEMA_NAME = f'{SCHEMA_BASE}name'
+
 SKOS_BASE = 'http://www.w3.org/2004/02/skos/core#'
 SKOS_ALTLABEL = f'{SKOS_BASE}altLabel'
+SKOS_PREFLABEL = f'{SKOS_BASE}prefLabel'

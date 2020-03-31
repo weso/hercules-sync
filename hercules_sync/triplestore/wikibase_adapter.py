@@ -5,7 +5,8 @@ from wikidataintegrator import wdi_core, wdi_login
 from . import TripleInfo, TripleStoreManager, ModificationResult, \
               TripleElement, URIElement
 from ..external.uri_factory_mock import URIFactory
-from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SKOS_ALTLABEL
+from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SCHEMA_NAME, \
+              SCHEMA_DESCRIPTION, SKOS_ALTLABEL, SKOS_PREFLABEL
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +39,15 @@ class WikibaseAdapter(TripleStoreManager):
         subject, predicate, objct = triple_info.content
         subject.id = self._get_wb_id_of(subject)
 
-        if predicate == RDFS_LABEL:
+        if self.is_wb_label(predicate):
             self._set_label(subject, objct)
             return
 
-        if predicate == RDFS_COMMENT:
+        if self.is_wb_description(predicate):
             self._set_description(subject, objct)
             return
 
-        if predicate == SKOS_ALTLABEL:
+        if self.is_wb_alias(predicate):
             self._set_alias(subject, objct)
             return
 
@@ -63,15 +64,15 @@ class WikibaseAdapter(TripleStoreManager):
         subject, predicate, objct = triple_info.content
         subject.id = self._get_wb_id_of(subject)
 
-        if predicate == RDFS_LABEL:
+        if self.is_wb_label(predicate):
             self._remove_label(subject, objct)
             return
 
-        if predicate == RDFS_COMMENT:
+        if self.is_wb_description(predicate):
             self._remove_description(subject, objct)
             return
 
-        if predicate == SKOS_ALTLABEL:
+        if self.is_wb_alias(predicate):
             self._remove_alias(subject, objct)
             return
 
@@ -162,6 +163,21 @@ class WikibaseAdapter(TripleStoreManager):
         entity = self._local_item_engine(subject.id)
         entity.set_description("", objct.lang)
         entity.write(self._local_login)
+
+    @classmethod
+    def is_wb_alias(cls, predicate: URIElement) -> bool:
+        """ Returns whether the predicate corresponds to an alias in wikibase. """
+        return predicate == SKOS_ALTLABEL
+
+    @classmethod
+    def is_wb_description(cls, predicate: URIElement) -> bool:
+        """ Returns whether the predicate corresponds to a description in wikibase. """
+        return predicate in [RDFS_COMMENT, SCHEMA_DESCRIPTION]
+
+    @classmethod
+    def is_wb_label(cls, predicate: URIElement) -> bool:
+        """ Returns whether the predicate corresponds to a label in wikibase. """
+        return predicate in [RDFS_LABEL, SKOS_PREFLABEL, SCHEMA_NAME]
 
 
 def get_uri_for(label):

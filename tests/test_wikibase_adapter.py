@@ -7,7 +7,8 @@ from wikidataintegrator import wdi_core
 
 from hercules_sync.external.uri_factory_mock import URIFactory
 from hercules_sync.triplestore import URIElement, LiteralElement, TripleInfo, WikibaseAdapter
-from hercules_sync.util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SKOS_ALTLABEL
+from hercules_sync.util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SKOS_ALTLABEL, \
+                                             SCHEMA_NAME, SCHEMA_DESCRIPTION, SKOS_PREFLABEL
 
 FACTORY = URIFactory()
 
@@ -70,6 +71,35 @@ def triples():
                                LiteralElement('Human'))
     }
 
+
+def test_alternative_description_uris(mocked_adapter, triples):
+    desc_en = triples['desc_en']
+    desc_en.predicate.uri = SCHEMA_DESCRIPTION
+    mocked_adapter.create_triple(desc_en)
+
+    writer = mocked_adapter._local_item_engine(None)
+    set_desc_calls = [mock.call('A person', 'en')]
+    writer.set_description.assert_has_calls(set_desc_calls, any_order=False)
+
+def test_alternative_label_uris(mocked_adapter, triples):
+    label_en = triples['label_en']
+    label_ko = triples['label_ko']
+    label_en.predicate.uri = SKOS_PREFLABEL
+    label_ko.predicate.uri = SCHEMA_NAME
+    mocked_adapter.create_triple(label_en)
+    mocked_adapter.create_triple(label_ko)
+
+    writer = mocked_adapter._local_item_engine(None)
+    set_label_calls = [
+        # default URI label
+        mock.call('labra'),
+        # label created with skos:preflabel predicate
+        mock.call('Jose Emilio Labra Gayo', 'en'),
+        # label created with schema:name predicate
+        mock.call('라브라', 'ko')
+    ]
+    writer.set_label.assert_has_calls(set_label_calls, any_order=False)
+
 def test_create_triple(mocked_adapter, triples):
     new_triple = triples['wditemid']
     mocked_adapter.create_triple(new_triple)
@@ -121,6 +151,7 @@ def test_existing_entity_is_not_created_again(mocked_adapter, triples):
                   append_value=[triple_b.predicate.id])
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
+
 
 def test_label_cant_be_inferred(mocked_adapter, triples):
     triple = triples['no_label']
