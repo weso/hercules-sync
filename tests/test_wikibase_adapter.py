@@ -1,12 +1,13 @@
 from unittest import mock
 
+import logging
 import pytest
 
 from wikidataintegrator import wdi_core
 
 from hercules_sync.external.uri_factory_mock import URIFactory
 from hercules_sync.triplestore import URIElement, LiteralElement, TripleInfo, WikibaseAdapter
-from hercules_sync.util.uri_constants import RDFS_LABEL, RDFS_COMMENT
+from hercules_sync.util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SKOS_ALTLABEL
 
 FACTORY = URIFactory()
 
@@ -47,6 +48,12 @@ def triples():
     example = 'https://example.org/onto#'
     example_no_label = 'https://example.org/onto/'
     return {
+        'alias_en': TripleInfo(URIElement(example + 'Person'), URIElement(SKOS_ALTLABEL),
+                              LiteralElement('individual', lang='en')),
+        'alias_es': TripleInfo(URIElement(example + 'Person'), URIElement(SKOS_ALTLABEL),
+                              LiteralElement('individuo', lang='es')),
+        'alias_es_2': TripleInfo(URIElement(example + 'Person'), URIElement(SKOS_ALTLABEL),
+                              LiteralElement('sujeto', lang='es')),
         'desc_en': TripleInfo(URIElement(example + 'Person'), URIElement(RDFS_COMMENT),
                               LiteralElement('A person', lang='en')),
         'desc_es': TripleInfo(URIElement(example + 'Person'), URIElement(RDFS_COMMENT),
@@ -158,6 +165,58 @@ def test_remove_triple(mocked_adapter, triples):
     ]
     writer.write.assert_has_calls(write_calls, any_order=False)
 
+def test_remove_alias(mocked_adapter, triples):
+    alias_es = triples['alias_es']
+    alias_es_2 = triples['alias_es_2']
+    mocked_adapter.create_triple(alias_es)
+    mocked_adapter.create_triple(alias_es_2)
+    mocked_adapter.remove_triple(alias_es)
+    item_engine_calls = [
+        # create subject
+        mock.call(new_item=True),
+        # set alias for item Q1 (es)
+        mock.call('Q1'),
+        # set alias for item Q1 (es2)
+        mock.call('Q1'),
+        # remove alias for item Q1
+        mock.call('Q1')
+    ]
+    mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
+
+    writer = mocked_adapter._local_item_engine(None)
+    set_alias_calls = [
+        mock.call(['individuo'], 'es'),
+        mock.call(['sujeto'], 'es'),
+        mock.call(writer.get_aliases(), 'es', append=False)
+    ]
+    writer.set_aliases.assert_has_calls(set_alias_calls, any_order=False)
+
+    get_alias_calls = [mock.call('es')]
+    writer.get_aliases.assert_has_calls(get_alias_calls, any_order=False)
+
+def test_remove_nonexisting_alias(mocked_adapter, triples, caplog):
+    alias_es = triples['alias_es']
+    mocked_adapter._local_item_engine(None).get_aliases.return_value = []
+    with caplog.at_level(logging.WARNING):
+        mocked_adapter.remove_triple(alias_es)
+
+    item_engine_calls = [
+        # create subject
+        mock.call(new_item=True)
+    ]
+    mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
+
+    writer = mocked_adapter._local_item_engine(None)
+    set_alias_calls = []
+    writer.set_aliases.assert_has_calls(set_alias_calls, any_order=False)
+
+    get_alias_calls = [
+        mock.call('es')
+    ]
+    writer.get_aliases.assert_has_calls(get_alias_calls, any_order=False)
+
+    assert "Alias individuo@es does not exist" in caplog.text
+
 def test_remove_description(mocked_adapter, triples):
     desc_es = triples['desc_es']
     mocked_adapter.create_triple(desc_es)
@@ -205,6 +264,30 @@ def test_remove_label(mocked_adapter, triples):
         mock.call('', 'en')
     ]
     writer.set_label.assert_has_calls(set_label_calls, any_order=False)
+
+def test_set_alias(mocked_adapter, triples):
+    alias_en = triples['alias_en']
+    alias_es = triples['alias_es']
+    mocked_adapter.create_triple(alias_en)
+    mocked_adapter.create_triple(alias_es)
+    item_engine_calls = [
+        # create subject
+        mock.call(new_item=True),
+        # set alias for item Q1
+        mock.call('Q1'),
+        # set alias again ('es') for item Q1
+        mock.call('Q1')
+    ]
+    mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
+
+    writer = mocked_adapter._local_item_engine(None)
+    set_alias_calls = [
+        # first triple (desc_en)
+        mock.call(['individual'], 'en'),
+        # second triple (desc_es)
+        mock.call(['individuo'], 'es')
+    ]
+    writer.set_aliases.assert_has_calls(set_alias_calls, any_order=False)
 
 def test_set_description(mocked_adapter, triples):
     desc_en = triples['desc_en']
