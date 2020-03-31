@@ -147,7 +147,7 @@ class WikibaseAdapter(TripleStoreManager):
             entity.set_aliases(curr_aliases, objct.lang, append=False)
             entity.write(self._local_login)
         except ValueError:
-            logging.warning("Alias %s@%s didnt exist for object %s. Skipping removal...",
+            logging.warning("Alias %s@%s does not exist for object %s. Skipping removal...",
                             objct.content, objct.lang, subject.id)
 
     def _remove_label(self, subject, objct):

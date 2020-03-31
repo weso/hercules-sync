@@ -1,5 +1,6 @@
 from unittest import mock
 
+import logging
 import pytest
 
 from wikidataintegrator import wdi_core
@@ -193,9 +194,12 @@ def test_remove_alias(mocked_adapter, triples):
     get_alias_calls = [mock.call('es')]
     writer.get_aliases.assert_has_calls(get_alias_calls, any_order=False)
 
-def test_remove_nonexisting_alias(mocked_adapter, triples):
+def test_remove_nonexisting_alias(mocked_adapter, triples, caplog):
     alias_es = triples['alias_es']
-    mocked_adapter.remove_triple(alias_es)
+    mocked_adapter._local_item_engine(None).get_aliases.return_value = []
+    with caplog.at_level(logging.WARNING):
+        mocked_adapter.remove_triple(alias_es)
+
     item_engine_calls = [
         # create subject
         mock.call(new_item=True)
@@ -210,6 +214,8 @@ def test_remove_nonexisting_alias(mocked_adapter, triples):
         mock.call('es')
     ]
     writer.get_aliases.assert_has_calls(get_alias_calls, any_order=False)
+
+    assert "Alias individuo@es does not exist" in caplog.text
 
 def test_remove_description(mocked_adapter, triples):
     desc_es = triples['desc_es']
