@@ -5,7 +5,7 @@ from wikidataintegrator import wdi_core, wdi_login
 from . import TripleInfo, TripleStoreManager, ModificationResult, \
               TripleElement, URIElement
 from ..external.uri_factory_mock import URIFactory
-from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT
+from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SKOS_ALTLABEL
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,10 @@ class WikibaseAdapter(TripleStoreManager):
             self._set_description(subject, objct)
             return
 
+        if predicate == SKOS_ALTLABEL:
+            self._set_alias(subject, objct)
+            return
+
         if isinstance(objct, URIElement):
             objct.id = self._get_wb_id_of(objct)
 
@@ -65,6 +69,10 @@ class WikibaseAdapter(TripleStoreManager):
 
         if predicate == RDFS_COMMENT:
             self._remove_description(subject, objct)
+            return
+
+        if predicate == SKOS_ALTLABEL:
+            self._remove_alias(subject, objct)
             return
 
         predicate.etype = 'property'
@@ -109,6 +117,13 @@ class WikibaseAdapter(TripleStoreManager):
                                  property_datatype=property_datatype)
         return entity_id
 
+    def _set_alias(self, subject, objct):
+        assert hasattr(objct, 'lang')
+        logging.debug("Changing alias @%s of %s", objct.lang, subject)
+        entity = self._local_item_engine(subject.id)
+        entity.set_aliases([objct.content], objct.lang)
+        entity.write(self._local_login)
+
     def _set_label(self, subject, objct):
         assert hasattr(objct, 'lang')
         logging.debug("Changing label @%s of %s", objct.lang, subject)
@@ -120,6 +135,13 @@ class WikibaseAdapter(TripleStoreManager):
         logging.debug("Removing description @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_description(objct.content, objct.lang)
+        entity.write(self._local_login)
+
+    def _remove_alias(self, subject, objct):
+        assert hasattr(objct, 'lang')
+        logging.debug("Removing alias @%s of %s", objct.lang, subject)
+        entity = self._local_item_engine(subject.id)
+        entity.set_aliases("", objct.lang)
         entity.write(self._local_login)
 
     def _remove_label(self, subject, objct):

@@ -9,3 +9,6 @@ RDF_TYPE = f'{RDF_BASE}type'
 OWL_BASE = 'http://www.w3.org/2002/07/owl#'
 OWL_CLASS = f'{OWL_BASE}Class'
 OWL_DISJOINT_WITH = f'{OWL_BASE}disjointWith'
+
+SKOS_BASE = 'http://www.w3.org/2004/02/skos/core#'
+SKOS_ALTLABEL = f'{SKOS_BASE}altLabel'
