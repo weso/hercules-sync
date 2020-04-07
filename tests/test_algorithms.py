@@ -12,7 +12,8 @@ from hercules_sync.triplestore import LiteralElement, URIElement
 from hercules_sync.util.uri_constants import RDFS_COMMENT, RDFS_LABEL, RDFS_SUBCLASSOF, \
                                              RDF_TYPE, OWL_CLASS, OWL_DISJOINT_WITH
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), 'data', 'synchronization')
+from .common import load_gitfile_from
+
 SOURCE_FILE = 'source.ttl'
 TARGET_FILE = 'target.ttl'
 
@@ -21,11 +22,7 @@ EX_PREFIX = 'http://www.semanticweb.org/spitxa/ontologies/2020/1/asio-human-reso
 
 @pytest.fixture(scope='module')
 def input():
-    with open(os.path.join(DATA_DIR, SOURCE_FILE), 'r') as f:
-        source_content = f.read()
-    with open(os.path.join(DATA_DIR, TARGET_FILE), 'r') as f:
-        target_content = f.read()
-    return GitFile(None, source_content, target_content)
+    return load_gitfile_from(SOURCE_FILE, TARGET_FILE)
 
 class TestNaiveSyncAlgorithm:
     @pytest.fixture(scope='class')

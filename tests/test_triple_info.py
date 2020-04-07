@@ -48,6 +48,10 @@ def test_from_rdflib(rdflib_triple):
     assert triple[2].datatype is None
     assert triple[2].lang is None
 
+def test_is_uri(string_literal, item_uri):
+    assert not string_literal.is_uri()
+    assert item_uri.is_uri()
+
 def test_literal_init():
     lit_a = LiteralElement("hello")
     assert lit_a.content == "hello"

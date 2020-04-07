@@ -47,6 +47,9 @@ class TripleElement(ABC):
             Instance of a wdi datatype that represents this TripeElement.
         """
 
+    def is_uri(self):
+        return False
+
 class URIElement(TripleElement):
     """ TripleElement class that represents URIs from a triple.
 
@@ -98,6 +101,9 @@ class URIElement(TripleElement):
 
     def to_wdi_datatype(self, **kwargs) -> Union[WDItemID, WDProperty]:
         return self.wdi_class(value=self.id, **kwargs)
+
+    def is_uri(self):
+        return True
 
     def __eq__(self, val):
         return self.uri == val
@@ -210,3 +216,6 @@ class TripleInfo():
 
         return self.subject == other.subject and self.predicate == other.predicate \
                and self.object == other.object
+
+    def __iter__(self):
+        return self.content.__iter__()
