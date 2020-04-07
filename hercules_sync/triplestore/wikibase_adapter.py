@@ -85,13 +85,13 @@ class WikibaseAdapter(TripleStoreManager):
         statement = objct.to_wdi_datatype(prop_nr=predicate.id)
         data = [statement]
         litem = self._local_item_engine(subject.id, data=data, append_value=[predicate.id])
-        litem.write(self._local_login)
+        litem.write(self._local_login, entity_type=subject.etype, property_datatype=subject.wdi_dtype)
 
     def _remove_statement(self, subject: TripleElement, predicate: TripleElement):
         statement_to_remove = wdi_core.WDBaseDataType.delete_statement(predicate.id)
         data = [statement_to_remove]
         litem = self._local_item_engine(subject.id, data=data)
-        litem.write(self._local_login)
+        litem.write(self._local_login, entity_type=subject.etype, property_datatype=subject.wdi_dtype)
 
     def _get_wb_id_of(self, uriref: URIElement, property_datatype='string'):
         wb_uri = get_uri_for(uriref.uri)

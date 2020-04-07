@@ -125,7 +125,7 @@ def test_create_triple(mocked_adapter, triples):
         mock.call(login, entity_type='item', property_datatype='string'),
         mock.call(login, entity_type='item', property_datatype='string'),
         mock.call(login, entity_type='property', property_datatype='wikibase-item'),
-        mock.call(login)
+        mock.call(login, entity_type='item', property_datatype='wikibase-item')
     ]
     writer.write.assert_has_calls(write_calls, any_order=False)
 
@@ -192,7 +192,7 @@ def test_remove_triple(mocked_adapter, triples):
     write_calls = [
         mock.call(login, entity_type='item', property_datatype='string'),
         mock.call(login, entity_type='property', property_datatype='wikibase-item'),
-        mock.call(login)
+        mock.call(login, entity_type='item', property_datatype='wikibase-item')
     ]
     writer.write.assert_has_calls(write_calls, any_order=False)
 
