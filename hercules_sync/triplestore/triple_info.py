@@ -1,11 +1,17 @@
-from rdflib.term import Literal, URIRef
-from wikidataintegrator.wdi_core import WDBaseDataType, WDItemID, WDMonolingualText, \
-                                        WDProperty, WDString
+import logging
 
 from abc import abstractmethod, ABC
 from typing import Type, Union
 
+from rdflib.term import Literal, URIRef
+from wikidataintegrator.wdi_core import WDBaseDataType, WDItemID, WDMonolingualText, \
+                                        WDProperty, WDString
+
+
 from ..util.error import InvalidArgumentError
+from ..util.mappings import datatype2wdidtype, datatype2wdiobject
+
+logger = logging.getLogger(__name__)
 
 class TripleElement(ABC):
     """ Element of a semantic triple.
@@ -59,11 +65,13 @@ class URIElement(TripleElement):
         URI of the element.
     """
 
+    DEFAULT_PROPTYPE = 'string'
     VALID_ETYPES = ['item', 'property']
 
-    def __init__(self, uri: str, etype='item'):
+    def __init__(self, uri: str, etype='item', proptype=None):
         self.uri = uri
         self.etype = etype
+        self.proptype = proptype
         self.id = None
 
     @property
@@ -77,6 +85,16 @@ class URIElement(TripleElement):
             if it corresponds to a wikibase property.
         """
         return self._etype
+
+    @property
+    def wdi_proptype(self) -> str:
+        if self.etype == 'item' or self.proptype is None:
+            return None
+
+        if self.proptype not in datatype2wdidtype:
+            logger.warning("Property type %s is not supported, returning None", self.proptype)
+            return None
+        return datatype2wdidtype[self.proptype]
 
     @etype.setter
     def etype(self, new_val: str) -> str:
@@ -144,7 +162,7 @@ class LiteralElement(TripleElement):
         if self.lang:
             return WDMonolingualText
         elif self.datatype:
-            raise NotImplementedError("Use of xsd:schema datatypes is not implemented yet.")
+            return self._datatype_to_wdiobject(prop_nr=-1).__class__
         else:
             return WDString
 
@@ -154,11 +172,17 @@ class LiteralElement(TripleElement):
 
     def to_wdi_datatype(self, **kwargs) -> WDBaseDataType:
         if self.lang:
-            return self.wdi_class(value=self.content, language=self.lang, *kwargs)
+            return self.wdi_class(value=self.content, language=self.lang, **kwargs)
         elif self.datatype:
-            raise NotImplementedError("Use of xsd:schema datatypes is not implemented yet.")
+            return self._datatype_to_wdiobject(**kwargs)
         else:
             return self.wdi_class(value=self.content, **kwargs)
+
+    def _datatype_to_wdiobject(self, **kwargs) -> WDBaseDataType:
+        if str(self.datatype) not in datatype2wdiobject:
+            logger.warning("Datatype %s is not supported, defaulting to string...", self.datatype)
+            return WDString(value=self.content, **kwargs)
+        return datatype2wdiobject[str(self.datatype)](self.content, **kwargs)
 
     def __eq__(self, other):
         if not isinstance(other, LiteralElement):
