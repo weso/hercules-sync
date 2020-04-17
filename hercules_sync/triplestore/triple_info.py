@@ -88,6 +88,12 @@ class URIElement(TripleElement):
 
     @property
     def wdi_proptype(self) -> str:
+        """ Returns the range of this URI as a wdi property string.
+
+        str
+            The range of this URI, corresponding to a DTYPE of the property datatypes
+            allowed in wikibase.
+        """
         if self.etype == 'item' or self.proptype is None:
             return None
 

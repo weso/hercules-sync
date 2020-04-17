@@ -1,16 +1,23 @@
+""" Module to provide mappings between different datatypes in XSD and their wdi representation. """
+
+import datetime
+
 from functools import partial
 from time import strftime
+from typing import Union
 
 from wikidataintegrator import wdi_core
 
 from .uri_constants import ASIO_BASE, GEO_BASE, XSD_BASE
 
-def create_geo_coordinate_from(content, **kwargs):
+def create_geo_coordinate_from(content: str, **kwargs) -> wdi_core.WDGlobeCoordinate:
+    """ Create a WDGlobecoordinate object from the point representation in a str. """
     latitude, longitude = content[5:].strip('()').split(" ")
     precision = max(latitude[::-1].find('.'), longitude[::-1].find('.'))
     return wdi_core.WDGlobeCoordinate(float(latitude), float(longitude), precision, **kwargs)
 
-def create_wdquantity(content, upper_bound=None, lower_bound=None, **kwargs):
+def create_wdquantity(content, upper_bound=None, lower_bound=None, **kwargs) -> wdi_core.WDQuantity:
+    """ Create a WDQantity object from a number value and its bounds. """
     return wdi_core.WDQuantity(content, upper_bound=upper_bound, lower_bound=lower_bound, **kwargs)
 
 def create_wditemid_from_bool(content, **kwargs):
@@ -22,11 +29,14 @@ def create_wditemid_from_bool(content, **kwargs):
     # return wdi_core.WDItemID(value=item_id, **kwargs)
     raise NotImplementedError("Support for boolean datatypes is not implemented yet.")
 
-def create_wdstring(content, **kwargs):
+def create_wdstring(content: str, **kwargs) -> wdi_core.WDString:
+    """ Create a WDString object from a given string. """
     return wdi_core.WDString(value=content, **kwargs)
 
-def create_wdtime(content, **kwargs):
-    return wdi_core.WDTime(content.strftime("+%Y%m%dT%H:%M:%SZ"), precision=11, **kwargs)
+def create_wdtime(content: Union[datetime.date, datetime.datetime, datetime.time],
+                  **kwargs) -> wdi_core.WDTime:
+    """ Create a WDTime object from a given datetime object. """
+    return wdi_core.WDTime(content.strftime("+%Y-%m-%dT%H:%M:%SZ"), precision=11, **kwargs)
 
 # Creates a wdi object from the given datatype
 datatype2wdiobject = {

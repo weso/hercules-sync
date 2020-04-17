@@ -43,41 +43,42 @@ class OntologySynchronizer():
     def _annotate_triples(self, ops: List[SyncOperation], file: GitFile):
         source_model = ontospy.Ontospy(data=file.source_content, rdf_format='ttl')
         target_model = ontospy.Ontospy(data=file.target_content, rdf_format='ttl')
-        all_urielements = self._extract_uris_from(ops)
-        self._annotate_uris_etype(all_urielements, source_model, target_model)
-        self._annotate_datatype_props(all_urielements, source_model, target_model)
-        self._annotate_object_props(all_urielements, source_model, target_model)
+        all_urielements = _extract_uris_from(ops)
+        _annotate_uris_etype(all_urielements, source_model, target_model)
+        _annotate_datatype_props(all_urielements, source_model, target_model)
+        _annotate_object_props(all_urielements, source_model, target_model)
 
-    def _annotate_datatype_props(self, all_urielements, source_model, target_model):
-        datatype_properties = source_model.all_properties_datatype + target_model.all_properties_datatype
-        for urielement in all_urielements:
-            for prop in datatype_properties:
-                if urielement == str(prop.uri):
-                    if len(prop.ranges) > 0:
-                        urielement.proptype = str(prop.ranges[0].uri)
+def _annotate_datatype_props(all_urielements, source_model, target_model):
+    datatype_properties = source_model.all_properties_datatype + \
+                          target_model.all_properties_datatype
+    for urielement in all_urielements:
+        for prop in datatype_properties:
+            if urielement == str(prop.uri):
+                if len(prop.ranges) > 0:
+                    urielement.proptype = str(prop.ranges[0].uri)
 
-    def _annotate_object_props(self, all_urielements: List[URIElement], source_model, target_model):
-        object_properties = source_model.all_properties_object + target_model.all_properties_object
-        for urielement in all_urielements:
-            for prop in object_properties:
-                if urielement == str(prop.uri):
-                    if len(prop.ranges) > 0:
-                        prop_range = prop.ranges[0]
-                        urielement.proptype = f'{ASIO_BASE}property' \
-                            if isinstance(prop_range, ontospy.core.entities.OntoProperty) \
-                            else f'{ASIO_BASE}item'
-                    else:
-                        # default type for object properties without range
-                        urielement.proptype = f'{ASIO_BASE}item'
+def _annotate_object_props(all_urielements: List[URIElement], source_model, target_model):
+    object_properties = source_model.all_properties_object + target_model.all_properties_object
+    for urielement in all_urielements:
+        for prop in object_properties:
+            if urielement == str(prop.uri):
+                if len(prop.ranges) > 0:
+                    prop_range = prop.ranges[0]
+                    urielement.proptype = f'{ASIO_BASE}property' \
+                        if isinstance(prop_range, ontospy.core.entities.OntoProperty) \
+                        else f'{ASIO_BASE}item'
+                else:
+                    # default type for object properties without range
+                    urielement.proptype = f'{ASIO_BASE}item'
 
-    def _annotate_uris_etype(self, all_urielements: List[URIElement], source_model, target_model):
-        properties = source_model.all_properties + target_model.all_properties
-        properties_uris = list(map(lambda x: str(x.uri), properties))
-        for urielement in all_urielements:
-            if urielement in properties_uris:
-                urielement.etype = 'property'
+def _annotate_uris_etype(all_urielements: List[URIElement], source_model, target_model):
+    properties = source_model.all_properties + target_model.all_properties
+    properties_uris = list(map(lambda x: str(x.uri), properties))
+    for urielement in all_urielements:
+        if urielement in properties_uris:
+            urielement.etype = 'property'
 
-    def _extract_uris_from(self, ops: List[SyncOperation]) -> List[URIElement]:
-        return [el for op in ops
-                for el in op._triple_info
-                if el.is_uri]
+def _extract_uris_from(ops: List[SyncOperation]) -> List[URIElement]:
+    return [el for op in ops
+            for el in op._triple_info
+            if el.is_uri]
