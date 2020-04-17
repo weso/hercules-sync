@@ -16,7 +16,7 @@ class OntologySynchronizer():
     Parameters
     ----------
     algoritm : :obj:`BaseSyncAlgorithm`
-        Algorithm that conforms to the BaseSyncAlgorithm interface.
+        Algorithm that conforms to the BaseSyncAlgorithm interface. 
     """
 
     def __init__(self, algorithm: BaseSyncAlgorithm):
