@@ -3,7 +3,6 @@
 import datetime
 
 from functools import partial
-from time import strftime
 from typing import Union
 
 from wikidataintegrator import wdi_core
