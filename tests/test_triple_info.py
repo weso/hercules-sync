@@ -2,10 +2,11 @@ import pytest
 
 from rdflib.term import Literal, URIRef
 from rdflib.namespace import XSD
-from wikidataintegrator.wdi_core import WDItemID, WDProperty, WDString, WDMonolingualText
+from wikidataintegrator.wdi_core import WDItemID, WDProperty, WDString, WDQuantity, WDMonolingualText
 
 from hercules_sync.triplestore import LiteralElement, TripleElement, TripleInfo, URIElement
 from hercules_sync.util.error import InvalidArgumentError
+from hercules_sync.util.uri_constants import GEO_BASE
 
 @pytest.fixture()
 def rdflib_triple():
@@ -80,14 +81,12 @@ def test_literal_str(string_literal, monolingual_literal, datatype_literal):
 def test_literal_wdi_class(string_literal, monolingual_literal, datatype_literal):
     assert string_literal.wdi_class == WDString
     assert monolingual_literal.wdi_class == WDMonolingualText
-    with pytest.raises(NotImplementedError):
-        _ = datatype_literal.wdi_class
+    assert datatype_literal.wdi_class == WDQuantity
 
 def test_literal_wdi_dtype(string_literal, monolingual_literal, datatype_literal):
     assert string_literal.wdi_dtype == WDString.DTYPE
     assert monolingual_literal.wdi_dtype == WDMonolingualText.DTYPE
-    with pytest.raises(NotImplementedError):
-        _ = datatype_literal.wdi_dtype
+    assert datatype_literal.wdi_dtype == WDQuantity.DTYPE
 
 def test_literal_equals(string_literal, monolingual_literal, datatype_literal):
     assert 'test' != string_literal
@@ -99,6 +98,7 @@ def test_uri_init(prop_uri):
     assert prop_uri.uri == 'http://example.org/onto#livesIn'
     assert prop_uri.etype == 'property'
     assert prop_uri.id is None
+    assert prop_uri.proptype is None
 
 def test_uri_etype():
     element = URIElement('')
@@ -122,3 +122,15 @@ def test_uri_wdi_class(prop_uri, item_uri):
 def test_uri_wdi_dtype(prop_uri, item_uri):
     assert prop_uri.wdi_dtype == WDProperty.DTYPE
     assert item_uri.wdi_dtype == WDItemID.DTYPE
+
+def test_uri_wdi_proptype(prop_uri, item_uri):
+    assert prop_uri.wdi_proptype is None
+    assert item_uri.wdi_proptype is None
+
+    prop_uri.proptype = 'invented'
+    assert prop_uri.wdi_proptype is None
+
+    prop_uri.proptype = f'{GEO_BASE}wktLiteral'
+    item_uri.proptype = f'{GEO_BASE}wktLiteral'
+    assert prop_uri.wdi_proptype == 'globe-coordinate'
+    assert item_uri.wdi_proptype is None

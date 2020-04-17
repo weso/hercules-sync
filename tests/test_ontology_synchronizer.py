@@ -1,21 +1,30 @@
 import pytest
 
+import ontospy
+
 from unittest import mock
 
 from hercules_sync.synchronization import OntologySynchronizer, GraphDiffSyncAlgorithm, \
                                           NaiveSyncAlgorithm
+from hercules_sync.util.uri_constants import OWL_BASE
 
 from .common import load_gitfile_from
 
 SOURCE_FILE = 'source_props.ttl'
 TARGET_FILE = 'target_props.ttl'
 
-ASIO_PREFIX = 'http://www.asio.es/asioontologies/asio#'
+SOURCE_FILE_RANGE = 'source_props_range.ttl'
+TARGET_FILE_RANGE = 'target_props_range.ttl'
+
 EX_PREFIX = 'http://www.semanticweb.org/spitxa/ontologies/2020/1/asio-human-resource#'
 
 @pytest.fixture(scope='module')
 def input():
     return load_gitfile_from(SOURCE_FILE, TARGET_FILE)
+
+@pytest.fixture(scope='module')
+def input_range():
+    return load_gitfile_from(SOURCE_FILE_RANGE, TARGET_FILE_RANGE)
 
 @pytest.fixture
 def mock_synchronizer():
@@ -51,13 +60,26 @@ def test_etype_annotation(input):
                 assert element.etype == 'item'
 
     synchronizer = OntologySynchronizer(algorithm)
-    annotated_ops = synchronizer._annotate_triples(ops, input)
+    synchronizer._annotate_triples(ops, input)
     # check that now the subjects of this ontology are classified as properties
     for op in ops:
         triple_info = op._triple_info
         assert triple_info.subject.etype == 'property'
 
-def test_synchronize_annotates_triples(mock_synchronizer):
-    mock_synchronizer.synchronize(None)
-    ops = mock_synchronizer._algorithm.do_algorithm(None)
-    mock_synchronizer._annotate_triples.assert_has_calls([mock.call(ops, None)])
+def test_prop_range_annotation(input_range):
+    algorithm = GraphDiffSyncAlgorithm()
+    ops = algorithm.do_algorithm(input_range)
+    synchronizer = OntologySynchronizer(algorithm)
+    synchronizer._annotate_triples(ops, input_range)
+    expected = {
+        f"{EX_PREFIX}authors": 'wikibase-item',
+        f"{EX_PREFIX}fund": 'wikibase-item',
+        f"{EX_PREFIX}projectEndDate": 'time',
+        f"{EX_PREFIX}projectKeyword": 'string',
+        f"{EX_PREFIX}projectFund": 'quantity',
+        f"{OWL_BASE}subPropertyOf": None # no range and datatype is not inferred
+    }
+    for op in ops:
+        for el in op._triple_info:
+            if el.uri in expected:
+                assert el.wdi_proptype == expected[el.uri]
