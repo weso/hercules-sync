@@ -6,7 +6,9 @@ from .ontology_synchronizer import OntologySynchronizer
 __all__ = [
     'AdditionOperation',
     'BaseSyncAlgorithm',
+    'GraphDiffSyncAlgorithm',
     'NaiveSyncAlgorithm',
+    'OntologySynchronizer',
     'RDFSyncAlgorithm',
     'RemovalOperation',
     'SyncOperation',

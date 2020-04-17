@@ -7,8 +7,9 @@ from wikidataintegrator import wdi_core
 
 from hercules_sync.external.uri_factory_mock import URIFactory
 from hercules_sync.triplestore import URIElement, LiteralElement, TripleInfo, WikibaseAdapter
-from hercules_sync.util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SKOS_ALTLABEL, \
-                                             SCHEMA_NAME, SCHEMA_DESCRIPTION, SKOS_PREFLABEL
+from hercules_sync.util.uri_constants import ASIO_BASE, GEO_BASE, RDFS_LABEL, RDFS_COMMENT, \
+                                             SKOS_ALTLABEL, SCHEMA_NAME, SCHEMA_DESCRIPTION, \
+                                             SKOS_PREFLABEL
 
 FACTORY = URIFactory()
 
@@ -63,8 +64,12 @@ def triples():
                                LiteralElement('Jose Emilio Labra Gayo', lang='en')),
         'label_ko': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
                                LiteralElement('라브라', lang='ko')),
+        'literal_datatype': TripleInfo(URIElement(example + 'Person'), URIElement(example + 'livesIn'),
+                                       LiteralElement('Point(12.34 2.43)', datatype=f"{GEO_BASE}wktLiteral")),
         'no_label': TripleInfo(URIElement(example_no_label + 'test'), URIElement(RDFS_LABEL),
                                LiteralElement('a test', lang='en')),
+        'proptype': TripleInfo(URIElement(example + 'test', etype='property', proptype=f"{ASIO_BASE}property"),
+                               URIElement(RDFS_LABEL), LiteralElement('test')),
         'wditemid': TripleInfo(URIElement(example + 'Person'), URIElement(example + 'livesIn'),
                                URIElement(example + 'City')),
         'wdstring': TripleInfo(URIElement(example + 'Person'), URIElement(example + 'altName'),
@@ -122,8 +127,8 @@ def test_create_triple(mocked_adapter, triples):
 
     login = mocked_adapter._local_login
     write_calls = [
-        mock.call(login, entity_type='item', property_datatype='string'),
-        mock.call(login, entity_type='item', property_datatype='string'),
+        mock.call(login, entity_type='item', property_datatype=None),
+        mock.call(login, entity_type='item', property_datatype=None),
         mock.call(login, entity_type='property', property_datatype='wikibase-item'),
         mock.call(login, entity_type='item', property_datatype='wikibase-item')
     ]
@@ -172,6 +177,27 @@ def test_label_cant_be_inferred(mocked_adapter, triples):
     writer.set_label.assert_has_calls(set_label_calls, any_order=False)
     assert writer.set_label.call_count == 1
 
+def test_literal_datatype(mocked_adapter, triples):
+    triple = triples['literal_datatype']
+    mocked_adapter.create_triple(triple)
+    item_engine_calls = [
+        mock.call(new_item=True),
+        mock.call(new_item=True),
+        mock.call('Q1', data=[triple.object.to_wdi_datatype(prop_nr=triple.predicate.id)],
+                  append_value=[triple.predicate.id])
+    ]
+    mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls, any_order=False)
+
+def test_proptype(mocked_adapter, triples):
+    triple = triples['proptype']
+    mocked_adapter.create_triple(triple)
+    writer = mocked_adapter._local_item_engine(None)
+    login = mocked_adapter._local_login
+    write_calls = [
+        mock.call(login, entity_type='property', property_datatype='wikibase-property'),
+        mock.call(login)
+    ]
+    writer.write.assert_has_calls(write_calls, any_order=False)
 
 def test_remove_triple(mocked_adapter, triples):
     triple = triples['wditemid']
@@ -190,7 +216,7 @@ def test_remove_triple(mocked_adapter, triples):
     writer = mocked_adapter._local_item_engine(None)
     login = mocked_adapter._local_login
     write_calls = [
-        mock.call(login, entity_type='item', property_datatype='string'),
+        mock.call(login, entity_type='item', property_datatype=None),
         mock.call(login, entity_type='property', property_datatype='wikibase-item'),
         mock.call(login, entity_type='item', property_datatype='wikibase-item')
     ]

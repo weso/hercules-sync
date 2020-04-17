@@ -1,3 +1,5 @@
+ASIO_BASE = 'http://www.asio.es/asioontologies/asio#'
+
 RDFS_BASE = 'http://www.w3.org/2000/01/rdf-schema#'
 RDFS_LABEL = f'{RDFS_BASE}label'
 RDFS_COMMENT = f'{RDFS_BASE}comment'
@@ -17,3 +19,7 @@ SCHEMA_NAME = f'{SCHEMA_BASE}name'
 SKOS_BASE = 'http://www.w3.org/2004/02/skos/core#'
 SKOS_ALTLABEL = f'{SKOS_BASE}altLabel'
 SKOS_PREFLABEL = f'{SKOS_BASE}prefLabel'
+
+GEO_BASE = 'http://www.opengis.net/ont/geosparql#'
+
+XSD_BASE = 'http://www.w3.org/2001/XMLSchema#'

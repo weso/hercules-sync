@@ -34,10 +34,8 @@ class WikibaseAdapter(TripleStoreManager):
         self._local_login = wdi_login.WDLogin(username, password, mediawiki_api_url)
 
     def create_triple(self, triple_info: TripleInfo) -> ModificationResult:
-        # TODO: When the basic ontology reasoner is implemented, infer is subject and object
-        # are either items or properties
         subject, predicate, objct = triple_info.content
-        subject.id = self._get_wb_id_of(subject)
+        subject.id = self._get_wb_id_of(subject, subject.wdi_proptype)
 
         if self.is_wb_label(predicate):
             self._set_label(subject, objct)
@@ -52,9 +50,8 @@ class WikibaseAdapter(TripleStoreManager):
             return
 
         if isinstance(objct, URIElement):
-            objct.id = self._get_wb_id_of(objct)
+            objct.id = self._get_wb_id_of(objct, objct.wdi_proptype)
 
-        # predicates always have etype 'property'. maybe move this to reasoner when implemented?
         predicate.etype = 'property'
         predicate.id = self._get_wb_id_of(predicate, objct.wdi_dtype)
 
@@ -62,7 +59,7 @@ class WikibaseAdapter(TripleStoreManager):
 
     def remove_triple(self, triple_info: TripleInfo) -> ModificationResult:
         subject, predicate, objct = triple_info.content
-        subject.id = self._get_wb_id_of(subject)
+        subject.id = self._get_wb_id_of(subject, subject.wdi_proptype)
 
         if self.is_wb_label(predicate):
             self._remove_label(subject, objct)
@@ -93,20 +90,20 @@ class WikibaseAdapter(TripleStoreManager):
         litem = self._local_item_engine(subject.id, data=data)
         litem.write(self._local_login, entity_type=subject.etype, property_datatype=subject.wdi_dtype)
 
-    def _get_wb_id_of(self, uriref: URIElement, property_datatype='string'):
+    def _get_wb_id_of(self, uriref: URIElement, proptype: str):
         wb_uri = get_uri_for(uriref.uri)
         if wb_uri is not None:
             logging.debug("Id of %s in wikibase: %s", uriref, wb_uri)
             return wb_uri
 
         logging.debug("Entity %s doesn't exist in wikibase. Creating it...", uriref)
-        entity_id = self._create_new_wb_item(uriref, property_datatype)
+        entity_id = self._create_new_wb_item(uriref, proptype)
 
         # update uri factory with new item
         post_uri(uriref.uri, entity_id)
         return entity_id
 
-    def _create_new_wb_item(self, uriref: URIElement, property_datatype: str):
+    def _create_new_wb_item(self, uriref: URIElement, proptype: str):
         entity = self._local_item_engine(new_item=True)
         if '#' not in uriref:
             logging.warning("URI %s doesn't contain a '#' separator. Default "
@@ -115,7 +112,7 @@ class WikibaseAdapter(TripleStoreManager):
             label = uriref.uri.split("#")[-1]
             entity.set_label(label)
         entity_id = entity.write(self._local_login, entity_type=uriref.etype,
-                                 property_datatype=property_datatype)
+                                 property_datatype=proptype)
         return entity_id
 
     def _set_alias(self, subject, objct):
