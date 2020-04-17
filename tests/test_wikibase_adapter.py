@@ -60,6 +60,8 @@ def triples():
                               LiteralElement('A person', lang='en')),
         'desc_es': TripleInfo(URIElement(example + 'Person'), URIElement(RDFS_COMMENT),
                               LiteralElement('Una persona', lang='es')),
+        'desc_long': TripleInfo(URIElement(example + 'Person'), URIElement(RDFS_COMMENT),
+                              LiteralElement('Una persona' * 500, lang='es')),
         'label_en': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
                                LiteralElement('Jose Emilio Labra Gayo', lang='en')),
         'label_ko': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
@@ -176,6 +178,19 @@ def test_label_cant_be_inferred(mocked_adapter, triples):
     ]
     writer.set_label.assert_has_calls(set_label_calls, any_order=False)
     assert writer.set_label.call_count == 1
+
+def test_long_description_is_shortened(mocked_adapter, triples):
+    triple = triples['desc_long']
+    mocked_adapter.create_triple(triple)
+
+    writer = mocked_adapter._local_item_engine(None)
+    desc = 'Una persona' * 500
+    shortened_desc = desc[:250] # 250 characters max
+    set_desc_calls = [
+        # first triple (desc_en)
+        mock.call(shortened_desc, 'es'),
+    ]
+    writer.set_description.assert_has_calls(set_desc_calls, any_order=False)
 
 def test_literal_datatype(mocked_adapter, triples):
     triple = triples['literal_datatype']

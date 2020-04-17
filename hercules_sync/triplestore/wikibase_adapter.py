@@ -10,6 +10,8 @@ from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SCHEMA_NAME, \
 
 logger = logging.getLogger(__name__)
 
+MAX_CHARACTERS_DESC = 250
+
 class WikibaseAdapter(TripleStoreManager):
     """ Adapter to execute operations on a wikibase instance.
 
@@ -130,9 +132,9 @@ class WikibaseAdapter(TripleStoreManager):
         entity.write(self._local_login)
 
     def _set_description(self, subject, objct):
-        logging.debug("Removing description @%s of %s", objct.lang, subject)
+        logging.debug("Setting description @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
-        entity.set_description(objct.content, objct.lang)
+        entity.set_description(objct.content[:MAX_CHARACTERS_DESC], objct.lang)
         entity.write(self._local_login)
 
     def _remove_alias(self, subject, objct):
