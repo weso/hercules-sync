@@ -37,7 +37,17 @@ class WikibaseAdapter(TripleStoreManager):
         self._local_login = wdi_login.WDLogin(username, password, mediawiki_api_url)
 
     def create_triple(self, triple_info: TripleInfo) -> ModificationResult:
-        """
+        """ Creates the given triple in the wikibase instance.
+
+        Parameters
+        ----------
+        triple_info: :obj:`TripleInfo`
+            Instance of the TripleInfo class with the data to be added to the wikibase.
+
+        Returns
+        -------
+        :obj:`ModificationResult`
+            ModificationResult object with the results of the operation.
         """
         subject, predicate, objct = triple_info.content
         subject.id = self._get_wb_id_of(subject, subject.wdi_proptype)
@@ -60,7 +70,17 @@ class WikibaseAdapter(TripleStoreManager):
         return self._create_statement(subject, predicate, objct)
 
     def remove_triple(self, triple_info: TripleInfo) -> ModificationResult:
-        """
+        """ Removes the given triple from the wikibase instance.
+
+        Parameters
+        ----------
+        triple_info: :obj:`TripleInfo`
+            Instance of the TripleInfo class with the data to be removed from the wikibase.
+
+        Returns
+        -------
+        :obj:`ModificationResult`
+            ModificationResult object with the results of the operation.
         """
         subject, predicate, objct = triple_info.content
         subject.id = self._get_wb_id_of(subject, subject.wdi_proptype)
