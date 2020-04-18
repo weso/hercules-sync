@@ -10,6 +10,7 @@ from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SCHEMA_NAME, \
 
 logger = logging.getLogger(__name__)
 
+ERR_CODE_LANGUAGE = 'not-recognized-language'
 MAX_CHARACTERS_DESC = 250
 
 class WikibaseAdapter(TripleStoreManager):
@@ -36,20 +37,19 @@ class WikibaseAdapter(TripleStoreManager):
         self._local_login = wdi_login.WDLogin(username, password, mediawiki_api_url)
 
     def create_triple(self, triple_info: TripleInfo) -> ModificationResult:
+        """
+        """
         subject, predicate, objct = triple_info.content
         subject.id = self._get_wb_id_of(subject, subject.wdi_proptype)
 
         if self.is_wb_label(predicate):
-            self._set_label(subject, objct)
-            return
+            return self._set_label(subject, objct)
 
         if self.is_wb_description(predicate):
-            self._set_description(subject, objct)
-            return
+            return self._set_description(subject, objct)
 
         if self.is_wb_alias(predicate):
-            self._set_alias(subject, objct)
-            return
+            return self._set_alias(subject, objct)
 
         if isinstance(objct, URIElement):
             objct.id = self._get_wb_id_of(objct, objct.wdi_proptype)
@@ -57,40 +57,42 @@ class WikibaseAdapter(TripleStoreManager):
         predicate.etype = 'property'
         predicate.id = self._get_wb_id_of(predicate, objct.wdi_dtype)
 
-        self._create_statement(subject, predicate, objct)
+        return self._create_statement(subject, predicate, objct)
 
     def remove_triple(self, triple_info: TripleInfo) -> ModificationResult:
+        """
+        """
         subject, predicate, objct = triple_info.content
         subject.id = self._get_wb_id_of(subject, subject.wdi_proptype)
 
         if self.is_wb_label(predicate):
-            self._remove_label(subject, objct)
-            return
+            return self._remove_label(subject, objct)
 
         if self.is_wb_description(predicate):
-            self._remove_description(subject, objct)
-            return
+            return self._remove_description(subject, objct)
 
         if self.is_wb_alias(predicate):
-            self._remove_alias(subject, objct)
-            return
+            return self._remove_alias(subject, objct)
 
         predicate.etype = 'property'
         predicate.id = self._get_wb_id_of(predicate, objct.wdi_dtype)
-        self._remove_statement(subject, predicate)
+        return self._remove_statement(subject, predicate)
 
     def _create_statement(self, subject: TripleElement, predicate: TripleElement,
-                          objct: TripleElement):
+                          objct: TripleElement) -> ModificationResult:
         statement = objct.to_wdi_datatype(prop_nr=predicate.id)
         data = [statement]
         litem = self._local_item_engine(subject.id, data=data, append_value=[predicate.id])
-        litem.write(self._local_login, entity_type=subject.etype, property_datatype=subject.wdi_dtype)
+        return self._try_write(litem, entity_type=subject.etype,
+                               property_datatype=subject.wdi_dtype)
 
-    def _remove_statement(self, subject: TripleElement, predicate: TripleElement):
+    def _remove_statement(self, subject: TripleElement,
+                          predicate: TripleElement) -> ModificationResult:
         statement_to_remove = wdi_core.WDBaseDataType.delete_statement(predicate.id)
         data = [statement_to_remove]
         litem = self._local_item_engine(subject.id, data=data)
-        litem.write(self._local_login, entity_type=subject.etype, property_datatype=subject.wdi_dtype)
+        return self._try_write(litem, entity_type=subject.etype,
+                               property_datatype=subject.wdi_dtype)
 
     def _get_wb_id_of(self, uriref: URIElement, proptype: str):
         wb_uri = get_uri_for(uriref.uri)
@@ -99,13 +101,14 @@ class WikibaseAdapter(TripleStoreManager):
             return wb_uri
 
         logging.debug("Entity %s doesn't exist in wikibase. Creating it...", uriref)
-        entity_id = self._create_new_wb_item(uriref, proptype)
+        modification_result = self._create_new_wb_item(uriref, proptype)
+        entity_id = modification_result.result
 
         # update uri factory with new item
         post_uri(uriref.uri, entity_id)
         return entity_id
 
-    def _create_new_wb_item(self, uriref: URIElement, proptype: str):
+    def _create_new_wb_item(self, uriref: URIElement, proptype: str) -> ModificationResult:
         entity = self._local_item_engine(new_item=True)
         if '#' not in uriref:
             logging.warning("URI %s doesn't contain a '#' separator. Default "
@@ -113,55 +116,70 @@ class WikibaseAdapter(TripleStoreManager):
         else:
             label = uriref.uri.split("#")[-1]
             entity.set_label(label)
-        entity_id = entity.write(self._local_login, entity_type=uriref.etype,
-                                 property_datatype=proptype)
-        return entity_id
+        return self._try_write(entity, entity_type=uriref.etype,
+                               property_datatype=proptype)
 
-    def _set_alias(self, subject, objct):
+    def _set_alias(self, subject, objct) -> ModificationResult:
         assert hasattr(objct, 'lang')
         logging.debug("Changing alias @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_aliases([objct.content], objct.lang)
-        entity.write(self._local_login)
+        return self._try_write(entity)
 
-    def _set_label(self, subject, objct):
+    def _set_label(self, subject, objct) -> ModificationResult:
         assert hasattr(objct, 'lang')
         logging.debug("Changing label @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_label(objct.content, objct.lang)
-        entity.write(self._local_login)
+        return self._try_write(entity)
 
-    def _set_description(self, subject, objct):
+    def _set_description(self, subject, objct) -> ModificationResult:
+        assert hasattr(objct, 'lang')
         logging.debug("Setting description @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_description(objct.content[:MAX_CHARACTERS_DESC], objct.lang)
-        entity.write(self._local_login)
+        return self._try_write(entity)
 
-    def _remove_alias(self, subject, objct):
+    def _remove_alias(self, subject, objct) -> ModificationResult:
         assert hasattr(objct, 'lang')
         logging.debug("Removing alias @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         curr_aliases = entity.get_aliases(objct.lang)
         try:
             curr_aliases.remove(objct.content)
-            entity.set_aliases(curr_aliases, objct.lang, append=False)
-            entity.write(self._local_login)
         except ValueError:
             logging.warning("Alias %s@%s does not exist for object %s. Skipping removal...",
                             objct.content, objct.lang, subject.id)
+            err_msg = f"Error removing alias {objct.content}@{objct.lang}."
+            return ModificationResult(successful=False, message=err_msg)
+        entity.set_aliases(curr_aliases, objct.lang, append=False)
+        return self._try_write(entity)
 
-    def _remove_label(self, subject, objct):
+
+    def _remove_label(self, subject, objct) -> ModificationResult:
         assert hasattr(objct, 'lang')
         logging.debug("Removing label @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_label("", objct.lang)
-        entity.write(self._local_login)
+        return self._try_write(entity)
 
-    def _remove_description(self, subject, objct):
+    def _remove_description(self, subject, objct) -> ModificationResult:
+        assert hasattr(objct, 'lang')
         logging.debug("Removing description @%s of %s", objct.lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_description("", objct.lang)
-        entity.write(self._local_login)
+        return self._try_write(entity)
+
+    def _try_write(self, entity, **kwargs) -> ModificationResult:
+        try:
+            eid = entity.write(self._local_login, **kwargs)
+            return ModificationResult(successful=True, res=eid)
+        except wdi_core.WDApiError as err:
+            err_code = err.wd_error_msg['error']['code']
+            msg = err.wd_error_msg['error']['info']
+            if err_code == ERR_CODE_LANGUAGE:
+                logger.warning("Language was not recognized. Skipping it...")
+            return ModificationResult(successful=False, message=msg)
 
     @classmethod
     def is_wb_alias(cls, predicate: URIElement) -> bool:

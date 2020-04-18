@@ -3,9 +3,10 @@ from abc import ABC, abstractmethod
 from . import TripleInfo
 
 class ModificationResult():
-    def __init__(self, successful: bool, message: str):
+    def __init__(self, successful: bool, message: str = "", res=""):
         self.successful = successful
         self.message = message
+        self.result = res
 
 class TripleStoreManager(ABC):
     """ Base class to execute operations on a triplestore.
