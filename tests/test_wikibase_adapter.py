@@ -6,7 +6,8 @@ import pytest
 from wikidataintegrator import wdi_core
 
 from hercules_sync.external.uri_factory_mock import URIFactory
-from hercules_sync.triplestore import URIElement, LiteralElement, TripleInfo, WikibaseAdapter
+from hercules_sync.triplestore import URIElement, LiteralElement, ModificationResult, \
+                                      TripleInfo, WikibaseAdapter
 from hercules_sync.util.uri_constants import ASIO_BASE, GEO_BASE, RDFS_LABEL, RDFS_COMMENT, \
                                              SKOS_ALTLABEL, SCHEMA_NAME, SCHEMA_DESCRIPTION, \
                                              SKOS_PREFLABEL
@@ -66,6 +67,8 @@ def triples():
                                LiteralElement('Jose Emilio Labra Gayo', lang='en')),
         'label_ko': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
                                LiteralElement('라브라', lang='ko')),
+        'label_unknown': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
+                                    LiteralElement('라브', lang='invented')),
         'literal_datatype': TripleInfo(URIElement(example + 'Person'), URIElement(example + 'livesIn'),
                                        LiteralElement('Point(12.34 2.43)', datatype=f"{GEO_BASE}wktLiteral")),
         'no_label': TripleInfo(URIElement(example_no_label + 'test'), URIElement(RDFS_LABEL),
@@ -77,6 +80,9 @@ def triples():
         'wdstring': TripleInfo(URIElement(example + 'Person'), URIElement(example + 'altName'),
                                LiteralElement('Human'))
     }
+
+def raise_wdapierror(err_msg):
+    raise wdi_core.WDApiError(err_msg)
 
 
 def test_alternative_description_uris(mocked_adapter, triples):
@@ -202,6 +208,13 @@ def test_literal_datatype(mocked_adapter, triples):
                   append_value=[triple.predicate.id])
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls, any_order=False)
+
+def test_modification_result_is_returned(mocked_adapter, triples):
+    triple = triples['wditemid']
+    res = mocked_adapter.create_triple(triple)
+    assert isinstance(res, ModificationResult)
+    assert res.successful
+    assert res.message == ""
 
 def test_proptype(mocked_adapter, triples):
     triple = triples['proptype']
@@ -404,6 +417,25 @@ def test_set_label(mocked_adapter, triples):
         mock.call('Jose Emilio Labra Gayo', 'en')
     ]
     writer.set_label.assert_has_calls(set_label_calls, any_order=False)
+
+def test_unknown_language(mocked_adapter, triples, caplog):
+    triple = triples['label_unknown']
+    mock_error_msg = {
+        'error': {
+            'code': 'not-recognized-language',
+            'info': 'The supplied language code was not recognized.',
+            'messages': [],
+            '*': ''
+        }
+    }
+    writer = mocked_adapter._local_item_engine(None)
+    writer.write = lambda x, **kwargs: raise_wdapierror(mock_error_msg)
+
+    with caplog.at_level(logging.WARNING):
+        modification_result = mocked_adapter.create_triple(triple)
+    assert "Language was not recognized" in caplog.text
+    assert not modification_result.successful
+    assert modification_result.message == mock_error_msg['error']['info']
 
 def test_utf_8(mocked_adapter, triples):
     triple_ko = triples['label_ko']

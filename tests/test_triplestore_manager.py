@@ -5,3 +5,4 @@ def test_modification_result():
     res = ModificationResult(True, msg)
     assert res.successful
     assert res.message == msg
+    assert res.result == ""
