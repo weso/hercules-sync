@@ -207,13 +207,6 @@ class GitDataLoader():
         Sha of the initial commit before the push.
     after_ref : str
         Sha of the final commit after the push.
-
-    Examples
-    --------
-    >>> X = 'a'
-    'a'
-    >>> y = 2
-    2
     """
 
     NO_COMMIT_MSG = "No commit found for the ref"
