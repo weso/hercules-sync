@@ -17,7 +17,7 @@ WEBHOOK = WebHook(app, endpoint='/postreceive', key=app.config['SECRET_KEY'])
 def on_push(data):
     try:
         LOGGER.info("Got push with: %s", data)
-        git_handler = GitEventHandler(data)
+        git_handler = GitPushEventHandler(data)
         ontology_files = _extract_ontology_files(git_handler, file_format='ttl')
         _synchronize_files(ontology_files)
     except:
@@ -26,8 +26,8 @@ def on_push(data):
 
 def _extract_ontology_files(git_handler: GitPushEventHandler, file_format: str) -> List[GitFile]:
     all_files = list(git_handler.removed_files) + list(git_handler.added_files) + \
-        list(git_handler.removed_files)
-    return filter(lambda x: x._patched_file.path.endswith(file_format), all_files)
+        list(git_handler.modified_files)
+    return list(filter(lambda x: x._patched_file.path.endswith(f".{file_format}"), all_files))
 
 def _synchronize_files(files: List[GitFile]):
     algorithm = GraphDiffSyncAlgorithm()
