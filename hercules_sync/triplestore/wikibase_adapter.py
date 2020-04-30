@@ -10,6 +10,7 @@ from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SCHEMA_NAME, \
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_LANG = 'es'
 ERR_CODE_LANGUAGE = 'not-recognized-language'
 MAX_CHARACTERS_DESC = 250
 
@@ -49,6 +50,7 @@ class WikibaseAdapter(TripleStoreManager):
         :obj:`ModificationResult`
             ModificationResult object with the results of the operation.
         """
+        logger.info(f"Create triple: {triple_info}")
         subject, predicate, objct = triple_info.content
         subject.id = self._get_wb_id_of(subject, subject.wdi_proptype)
 
@@ -82,6 +84,7 @@ class WikibaseAdapter(TripleStoreManager):
         :obj:`ModificationResult`
             ModificationResult object with the results of the operation.
         """
+        logger.info(f"Remove triple: {triple_info}")
         subject, predicate, objct = triple_info.content
         subject.id = self._get_wb_id_of(subject, subject.wdi_proptype)
 
@@ -130,64 +133,63 @@ class WikibaseAdapter(TripleStoreManager):
 
     def _create_new_wb_item(self, uriref: URIElement, proptype: str) -> ModificationResult:
         entity = self._local_item_engine(new_item=True)
-        if '#' not in uriref:
-            logging.warning("URI %s doesn't contain a '#' separator. Default "
-                            "label can't be inferred.", uriref)
+        label = try_infer_label_from(uriref)
+        if label is None:
+            logging.warning("Label for URI %s could not be inferred.", uriref)
         else:
-            label = uriref.uri.split("#")[-1]
             entity.set_label(label)
         return self._try_write(entity, entity_type=uriref.etype,
                                property_datatype=proptype)
 
     def _set_alias(self, subject, objct) -> ModificationResult:
-        assert hasattr(objct, 'lang')
-        logging.debug("Changing alias @%s of %s", objct.lang, subject)
+        lang = get_lang_from_literal(objct)
+        logging.debug("Changing alias @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
-        entity.set_aliases([objct.content], objct.lang)
+        entity.set_aliases([objct.content], lang)
         return self._try_write(entity)
 
     def _set_label(self, subject, objct) -> ModificationResult:
-        assert hasattr(objct, 'lang')
-        logging.debug("Changing label @%s of %s", objct.lang, subject)
+        lang = get_lang_from_literal(objct)
+        logging.debug("Changing label @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
-        entity.set_label(objct.content, objct.lang)
+        entity.set_label(objct.content, lang)
         return self._try_write(entity)
 
     def _set_description(self, subject, objct) -> ModificationResult:
-        assert hasattr(objct, 'lang')
-        logging.debug("Setting description @%s of %s", objct.lang, subject)
+        lang = get_lang_from_literal(objct)
+        logging.debug("Setting description @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
-        entity.set_description(objct.content[:MAX_CHARACTERS_DESC], objct.lang)
+        entity.set_description(objct.content[:MAX_CHARACTERS_DESC], lang)
         return self._try_write(entity)
 
     def _remove_alias(self, subject, objct) -> ModificationResult:
-        assert hasattr(objct, 'lang')
-        logging.debug("Removing alias @%s of %s", objct.lang, subject)
+        lang = get_lang_from_literal(objct)
+        logging.debug("Removing alias @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
-        curr_aliases = entity.get_aliases(objct.lang)
+        curr_aliases = entity.get_aliases(lang)
         try:
             curr_aliases.remove(objct.content)
         except ValueError:
             logging.warning("Alias %s@%s does not exist for object %s. Skipping removal...",
-                            objct.content, objct.lang, subject.id)
-            err_msg = f"Error removing alias {objct.content}@{objct.lang}."
+                            objct.content, lang, subject.id)
+            err_msg = f"Error removing alias {objct.content}@{lang}."
             return ModificationResult(successful=False, message=err_msg)
-        entity.set_aliases(curr_aliases, objct.lang, append=False)
+        entity.set_aliases(curr_aliases, lang, append=False)
         return self._try_write(entity)
 
 
     def _remove_label(self, subject, objct) -> ModificationResult:
-        assert hasattr(objct, 'lang')
-        logging.debug("Removing label @%s of %s", objct.lang, subject)
+        lang = get_lang_from_literal(objct)
+        logging.debug("Removing label @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
-        entity.set_label("", objct.lang)
+        entity.set_label("", lang)
         return self._try_write(entity)
 
     def _remove_description(self, subject, objct) -> ModificationResult:
-        assert hasattr(objct, 'lang')
-        logging.debug("Removing description @%s of %s", objct.lang, subject)
+        lang = get_lang_from_literal(objct)
+        logging.debug("Removing description @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
-        entity.set_description("", objct.lang)
+        entity.set_description("", lang)
         return self._try_write(entity)
 
     def _try_write(self, entity, **kwargs) -> ModificationResult:
@@ -195,6 +197,7 @@ class WikibaseAdapter(TripleStoreManager):
             eid = entity.write(self._local_login, **kwargs)
             return ModificationResult(successful=True, res=eid)
         except wdi_core.WDApiError as err:
+            logger.warning(err.wd_error_msg['error'])
             err_code = err.wd_error_msg['error']['code']
             msg = err.wd_error_msg['error']['info']
             if err_code == ERR_CODE_LANGUAGE:
@@ -225,3 +228,17 @@ def post_uri(label, uri):
     logging.debug("Calling POST of URIFactory: %s - %s", label, uri)
     uri_factory = URIFactory()
     return uri_factory.post_uri(label, uri)
+
+def get_lang_from_literal(objct):
+    if not hasattr(objct, 'lang') or objct.lang is None:
+        logging.warning("Literal %s has no language. Defaulting to '%s'", objct, DEFAULT_LANG)
+        return DEFAULT_LANG
+    return objct.lang
+
+def try_infer_label_from(uriref: URIElement):
+    if '#' in uriref:
+        return uriref.uri.split('#')[-1]
+    elif '/' in uriref:
+        return uriref.uri.split('/')[-1]
+    else:
+        return None

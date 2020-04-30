@@ -39,7 +39,7 @@ class SyncOperation(ABC):
 
 class AdditionOperation(SyncOperation):
     def execute(self, triple_store: TripleStoreManager) -> ModificationResult:
-        triple_store.create_triple(self._triple_info)
+        return triple_store.create_triple(self._triple_info)
 
     def __str__(self):
         return "AdditionOperation: " + super(AdditionOperation, self).__str__()
@@ -52,7 +52,7 @@ class AdditionOperation(SyncOperation):
 
 class RemovalOperation(SyncOperation):
     def execute(self, triple_store: TripleStoreManager) -> ModificationResult:
-        triple_store.remove_triple(self._triple_info)
+        return triple_store.remove_triple(self._triple_info)
 
     def __str__(self):
         return "RemovalOperation: " + super(RemovalOperation, self).__str__()

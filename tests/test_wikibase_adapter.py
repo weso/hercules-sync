@@ -8,6 +8,7 @@ from wikidataintegrator import wdi_core
 from hercules_sync.external.uri_factory_mock import URIFactory
 from hercules_sync.triplestore import URIElement, LiteralElement, ModificationResult, \
                                       TripleInfo, WikibaseAdapter
+from hercules_sync.triplestore.wikibase_adapter import DEFAULT_LANG
 from hercules_sync.util.uri_constants import ASIO_BASE, GEO_BASE, RDFS_LABEL, RDFS_COMMENT, \
                                              SKOS_ALTLABEL, SCHEMA_NAME, SCHEMA_DESCRIPTION, \
                                              SKOS_PREFLABEL
@@ -49,7 +50,8 @@ def mocked_adapter(id_generator):
 @pytest.fixture
 def triples():
     example = 'https://example.org/onto#'
-    example_no_label = 'https://example.org/onto/'
+    example_no_hashtag = 'https://example.org/onto/'
+    example_no_label = 'example'
     return {
         'alias_en': TripleInfo(URIElement(example + 'Person'), URIElement(SKOS_ALTLABEL),
                               LiteralElement('individual', lang='en')),
@@ -67,12 +69,16 @@ def triples():
                                LiteralElement('Jose Emilio Labra Gayo', lang='en')),
         'label_ko': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
                                LiteralElement('라브라', lang='ko')),
+        'label_no_lang': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
+                               LiteralElement('José Emilio Labra Gayo')),
         'label_unknown': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
                                     LiteralElement('라브', lang='invented')),
         'literal_datatype': TripleInfo(URIElement(example + 'Person'), URIElement(example + 'livesIn'),
                                        LiteralElement('Point(12.34 2.43)', datatype=f"{GEO_BASE}wktLiteral")),
         'no_label': TripleInfo(URIElement(example_no_label + 'test'), URIElement(RDFS_LABEL),
                                LiteralElement('a test', lang='en')),
+        'no_hashtag': TripleInfo(URIElement(example_no_hashtag + 'test'), URIElement(RDFS_LABEL),
+                               LiteralElement('1234', lang='en')),
         'proptype': TripleInfo(URIElement(example + 'test', etype='property', proptype=f"{ASIO_BASE}property"),
                                URIElement(RDFS_LABEL), LiteralElement('test')),
         'wditemid': TripleInfo(URIElement(example + 'Person'), URIElement(example + 'livesIn'),
@@ -184,6 +190,32 @@ def test_label_cant_be_inferred(mocked_adapter, triples):
     ]
     writer.set_label.assert_has_calls(set_label_calls, any_order=False)
     assert writer.set_label.call_count == 1
+
+def test_label_no_lang_uses_default_lang(mocked_adapter, triples):
+    triple = triples['label_no_lang']
+    mocked_adapter.create_triple(triple)
+    writer = mocked_adapter._local_item_engine(None)
+    set_label_calls = [
+        # inferred label
+        mock.call('labra'),
+        # label created with rdfs:label predicate
+        mock.call('José Emilio Labra Gayo', DEFAULT_LANG)
+    ]
+    writer.set_label.assert_has_calls(set_label_calls, any_order=False)
+    assert writer.set_label.call_count == 2
+
+def test_label_with_no_hashtag_is_inferred(mocked_adapter, triples):
+    triple = triples['no_hashtag']
+    mocked_adapter.create_triple(triple)
+    writer = mocked_adapter._local_item_engine(None)
+    set_label_calls = [
+        # inferred label
+        mock.call('test'),
+        # label created with rdfs:label predicate
+        mock.call('1234', 'en')
+    ]
+    writer.set_label.assert_has_calls(set_label_calls, any_order=False)
+    assert writer.set_label.call_count == 2
 
 def test_long_description_is_shortened(mocked_adapter, triples):
     triple = triples['desc_long']
