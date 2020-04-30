@@ -1,4 +1,6 @@
+import json
 import logging
+import requests
 
 from wikidataintegrator import wdi_core, wdi_login
 
@@ -12,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_LANG = 'es'
 ERR_CODE_LANGUAGE = 'not-recognized-language'
+MAPPINGS_PROP_LABEL = "same as"
+MAPPINGS_PROP_DESC = "Mapping of an item to its original URI"
 MAX_CHARACTERS_DESC = 250
 
 class WikibaseAdapter(TripleStoreManager):
@@ -33,9 +37,12 @@ class WikibaseAdapter(TripleStoreManager):
     """
 
     def __init__(self, mediawiki_api_url, sparql_endpoint_url, username, password):
+        self.api_url = mediawiki_api_url
+        self.sparql_url =  sparql_endpoint_url
         self._local_item_engine = wdi_core.WDItemEngine. \
             wikibase_item_engine_factory(mediawiki_api_url, sparql_endpoint_url)
         self._local_login = wdi_login.WDLogin(username, password, mediawiki_api_url)
+        self._mappings_prop = self._get_or_create_mappings_prop()
 
     def create_triple(self, triple_info: TripleInfo) -> ModificationResult:
         """ Creates the given triple in the wikibase instance.
@@ -117,6 +124,46 @@ class WikibaseAdapter(TripleStoreManager):
         return self._try_write(litem, entity_type=subject.etype,
                                property_datatype=subject.wdi_dtype)
 
+    def _add_mappings_to_entity(self, entity, uri: str):
+        same_as = wdi_core.WDUrl(value=uri, prop_nr=self._mappings_prop)
+        entity.update([same_as], append_value=[self._mappings_prop])
+
+    def _create_new_wb_item(self, uriref: URIElement, proptype: str) -> ModificationResult:
+        entity = self._local_item_engine(new_item=True)
+        label = try_infer_label_from(uriref)
+        if label is None:
+            logging.warning("Label for URI %s could not be inferred.", uriref)
+        else:
+            entity.set_label(label)
+
+        if not is_asio_uri(uriref):
+            self._add_mappings_to_entity(entity, uriref.uri)
+
+        return self._try_write(entity, entity_type=uriref.etype,
+                               property_datatype=proptype)
+
+    def _get_or_create_mappings_prop(self):
+        mappings_prop_id = None
+        query_res = json.loads(requests.get(f"{self.api_url}?action=wbsearchentities" + \
+            f"&search={MAPPINGS_PROP_LABEL}&format=json&language=en&type=property").text)
+        if 'search' in query_res and len(query_res['search']) > 0:
+            for search_result in query_res['search']:
+                if search_result['label'] == MAPPINGS_PROP_LABEL and \
+                   search_result['description'] == MAPPINGS_PROP_DESC:
+                    mappings_prop_id = search_result['id']
+                    logger.info("Mappings property has been found: %s", mappings_prop_id)
+                    break
+
+        if mappings_prop_id is None:
+            logger.info("Mappings property was not found in the wikibase. Creating it...")
+            mappings_item = self._local_item_engine(new_item=True)
+            mappings_item.set_label(MAPPINGS_PROP_LABEL, lang='en')
+            mappings_item.set_description(MAPPINGS_PROP_DESC, lang='en')
+            mappings_prop_id = mappings_item.write(self._local_login, entity_type='property',
+                                                   property_datatype='url')
+            logger.info("Mappings property has been created: %s", mappings_prop_id)
+        return mappings_prop_id
+
     def _get_wb_id_of(self, uriref: URIElement, proptype: str):
         wb_uri = get_uri_for(uriref.uri)
         if wb_uri is not None:
@@ -130,16 +177,6 @@ class WikibaseAdapter(TripleStoreManager):
         # update uri factory with new item
         post_uri(uriref.uri, entity_id)
         return entity_id
-
-    def _create_new_wb_item(self, uriref: URIElement, proptype: str) -> ModificationResult:
-        entity = self._local_item_engine(new_item=True)
-        label = try_infer_label_from(uriref)
-        if label is None:
-            logging.warning("Label for URI %s could not be inferred.", uriref)
-        else:
-            entity.set_label(label)
-        return self._try_write(entity, entity_type=uriref.etype,
-                               property_datatype=proptype)
 
     def _set_alias(self, subject, objct) -> ModificationResult:
         lang = get_lang_from_literal(objct)
@@ -224,16 +261,19 @@ def get_uri_for(label):
     uri_factory = URIFactory()
     return uri_factory.get_uri(label)
 
-def post_uri(label, uri):
-    logging.debug("Calling POST of URIFactory: %s - %s", label, uri)
-    uri_factory = URIFactory()
-    return uri_factory.post_uri(label, uri)
-
 def get_lang_from_literal(objct):
     if not hasattr(objct, 'lang') or objct.lang is None:
         logging.warning("Literal %s has no language. Defaulting to '%s'", objct, DEFAULT_LANG)
         return DEFAULT_LANG
     return objct.lang
+
+def is_asio_uri(uriref: URIElement) -> bool:
+    return '/hercules/asio' in uriref.uri
+
+def post_uri(label, uri):
+    logging.debug("Calling POST of URIFactory: %s - %s", label, uri)
+    uri_factory = URIFactory()
+    return uri_factory.post_uri(label, uri)
 
 def try_infer_label_from(uriref: URIElement):
     if '#' in uriref:
