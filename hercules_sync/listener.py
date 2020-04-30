@@ -37,4 +37,6 @@ def _synchronize_files(files: List[GitFile]):
         synchronizer = OntologySynchronizer(algorithm)
         ops = synchronizer.synchronize(file)
         for op in ops:
-            op.execute(adapter)
+            res = op.execute(adapter)
+            if not res.successful:
+                LOGGER.warning("Error synchronizing triple: %s", res.message)
