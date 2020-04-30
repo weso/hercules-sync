@@ -94,6 +94,10 @@ def test_literal_equals(string_literal, monolingual_literal, datatype_literal):
     assert LiteralElement('목소리', lang='ko') == monolingual_literal
     assert LiteralElement('12', datatype=XSD.integer) == datatype_literal
 
+def test_tripleinfo_str(rdflib_triple):
+    triple = TripleInfo.from_rdflib(rdflib_triple)
+    assert str(triple) == f"{triple.subject} - {triple.predicate} - {triple.object}"
+
 def test_uri_init(prop_uri):
     assert prop_uri.uri == 'http://example.org/onto#livesIn'
     assert prop_uri.etype == 'property'
