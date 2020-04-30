@@ -1,14 +1,17 @@
 from unittest import mock
 
+import json
 import logging
 import pytest
+import wikidataintegrator
 
 from wikidataintegrator import wdi_core
 
 from hercules_sync.external.uri_factory_mock import URIFactory
 from hercules_sync.triplestore import URIElement, LiteralElement, ModificationResult, \
                                       TripleInfo, WikibaseAdapter
-from hercules_sync.triplestore.wikibase_adapter import DEFAULT_LANG, is_asio_uri
+from hercules_sync.triplestore.wikibase_adapter import DEFAULT_LANG, MAPPINGS_PROP_DESC, \
+                                                       MAPPINGS_PROP_LABEL, is_asio_uri
 from hercules_sync.util.uri_constants import ASIO_BASE, GEO_BASE, RDFS_LABEL, RDFS_COMMENT, \
                                              SKOS_ALTLABEL, SCHEMA_NAME, SCHEMA_DESCRIPTION, \
                                              SKOS_PREFLABEL
@@ -28,6 +31,10 @@ class IDGenerator():
         except KeyError:
             pass
 
+class FakeRequestsResponse():
+    def __init__(self, text):
+        self.text = text
+
 @pytest.fixture()
 def id_generator():
     return IDGenerator()
@@ -43,11 +50,40 @@ def mocked_adapter(id_generator):
         adapter = WikibaseAdapter('', '', '', '')
         writer_mock = mock.MagicMock()
         writer_mock.write = mock.MagicMock(side_effect=id_generator.generate_id)
+        writer_mock.update = mock.MagicMock()
         adapter._local_item_engine = mock.MagicMock(return_value=writer_mock)
         adapter._local_login = mock.MagicMock()
         adapter._mappings_prop = mock.MagicMock()
-        adapter._add_mappings_to_entity = mock.MagicMock()
         yield adapter
+
+def mocked_requests_prop_existing(_):
+    text = json.dumps({
+        'search': [
+            {
+                'label': 'domain',
+                'description': 'Represents the domain of an entity',
+                'id': 'P2'
+            },
+            {
+                'label': MAPPINGS_PROP_LABEL,
+                'description': MAPPINGS_PROP_DESC,
+                'id': 'P42'
+            }
+        ]
+    })
+    return FakeRequestsResponse(text)
+
+def mocked_requests_prop_non_existing(_):
+    text = json.dumps({
+        'search': [
+            {
+                'label': 'range',
+                'description': 'Represents the domain of an entity',
+                'id': 'P25'
+            }
+        ]
+    })
+    return FakeRequestsResponse(text)
 
 @pytest.fixture
 def triples():
@@ -154,6 +190,16 @@ def test_create_triple(mocked_adapter, triples):
     ]
     writer.write.assert_has_calls(write_calls, any_order=False)
 
+@mock.patch('requests.get', side_effect=mocked_requests_prop_existing)
+def test_get_or_create_mappings_existing(mock_get, mocked_adapter, triples):
+    mocked_adapter.api_url = 'www.example.org'
+    assert mocked_adapter._get_or_create_mappings_prop() == 'P42'
+
+@mock.patch('requests.get', side_effect=mocked_requests_prop_non_existing)
+def test_get_or_create_mappings_non_existing(mock_get, mocked_adapter, triples):
+    mocked_adapter.api_url = 'www.example.org'
+    assert mocked_adapter._get_or_create_mappings_prop() == 'P1'
+
 def test_existing_entity_is_not_created_again(mocked_adapter, triples):
     triple_a = triples['wditemid']
     triple_b = triples['wdstring']
@@ -177,12 +223,27 @@ def test_existing_entity_is_not_created_again(mocked_adapter, triples):
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
 
+@mock.patch('wikidataintegrator.wdi_core.WDItemEngine.wikibase_item_engine_factory', side_effect=None)
+@mock.patch('wikidataintegrator.wdi_login.WDLogin', side_effect=None)
+@mock.patch('requests.get', side_effect=mocked_requests_prop_existing)
+def test_init(mock_get, mock_login, mock_item_engine):
+    API_URL = 'https://hercules-demo.wiki.opencura.com/w/api.php'
+    SPARQL_URL = 'https://hercules-demo.wiki.opencura.com/QueryService'
+    USER = 'test'
+    PASS = 'testPass123'
+    adapter = WikibaseAdapter(API_URL, SPARQL_URL, USER, PASS)
+    assert adapter.api_url == API_URL
+    assert adapter.sparql_url == SPARQL_URL
+    mock_login.assert_has_calls([mock.call(USER, PASS, API_URL)])
+    mock_item_engine.assert_has_calls([mock.call(API_URL, SPARQL_URL)])
+
 def test_is_asio_uri(triples):
     assert is_asio_uri(triples['desc_asio'].subject)
     assert not is_asio_uri(triples['desc_asio'].predicate)
     assert not is_asio_uri(triples['desc_en'].subject)
 
 def test_label_cant_be_inferred(mocked_adapter, triples):
+    mocked_adapter._add_mappings_to_entity = mock.MagicMock() # to avoid problems with the subject uri
     triple = triples['no_label']
     mocked_adapter.create_triple(triple)
     item_engine_calls = [
@@ -254,12 +315,14 @@ def test_literal_datatype(mocked_adapter, triples):
 def test_mappings_are_created_without_asio(mocked_adapter, triples):
     triple = triples['desc_en']
     res = mocked_adapter.create_triple(triple)
-    assert mocked_adapter._add_mappings_to_entity.call_count == 1
+    writer = mocked_adapter._local_item_engine(None)
+    assert writer.update.call_count == 1
 
 def test_mappings_are_not_created_with_asio(mocked_adapter, triples):
     triple = triples['desc_asio']
     res = mocked_adapter.create_triple(triple)
-    assert mocked_adapter._add_mappings_to_entity.call_count == 0
+    writer = mocked_adapter._local_item_engine(None)
+    assert writer.update.call_count == 0
 
 def test_modification_result_is_returned(mocked_adapter, triples):
     triple = triples['wditemid']
