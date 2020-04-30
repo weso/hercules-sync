@@ -249,3 +249,6 @@ class TripleInfo():
 
     def __iter__(self):
         return self.content.__iter__()
+
+    def __str__(self):
+        return f"{self.subject} - {self.predicate} - {self.object}"
