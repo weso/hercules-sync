@@ -8,7 +8,7 @@ from wikidataintegrator import wdi_core
 from hercules_sync.external.uri_factory_mock import URIFactory
 from hercules_sync.triplestore import URIElement, LiteralElement, ModificationResult, \
                                       TripleInfo, WikibaseAdapter
-from hercules_sync.triplestore.wikibase_adapter import DEFAULT_LANG
+from hercules_sync.triplestore.wikibase_adapter import DEFAULT_LANG, is_asio_uri
 from hercules_sync.util.uri_constants import ASIO_BASE, GEO_BASE, RDFS_LABEL, RDFS_COMMENT, \
                                              SKOS_ALTLABEL, SCHEMA_NAME, SCHEMA_DESCRIPTION, \
                                              SKOS_PREFLABEL
@@ -45,6 +45,8 @@ def mocked_adapter(id_generator):
         writer_mock.write = mock.MagicMock(side_effect=id_generator.generate_id)
         adapter._local_item_engine = mock.MagicMock(return_value=writer_mock)
         adapter._local_login = mock.MagicMock()
+        adapter._mappings_prop = mock.MagicMock()
+        adapter._add_mappings_to_entity = mock.MagicMock()
         yield adapter
 
 @pytest.fixture
@@ -52,6 +54,8 @@ def triples():
     example = 'https://example.org/onto#'
     example_no_hashtag = 'https://example.org/onto/'
     example_no_label = 'example'
+    example_asio = 'https://example.org/hercules/asio#'
+
     return {
         'alias_en': TripleInfo(URIElement(example + 'Person'), URIElement(SKOS_ALTLABEL),
                               LiteralElement('individual', lang='en')),
@@ -65,6 +69,8 @@ def triples():
                               LiteralElement('Una persona', lang='es')),
         'desc_long': TripleInfo(URIElement(example + 'Person'), URIElement(RDFS_COMMENT),
                               LiteralElement('Una persona' * 500, lang='es')),
+        'desc_asio': TripleInfo(URIElement(example_asio + 'authors'), URIElement(RDFS_COMMENT),
+                              LiteralElement('Publication authored by a person.', lang='en')),
         'label_en': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
                                LiteralElement('Jose Emilio Labra Gayo', lang='en')),
         'label_ko': TripleInfo(URIElement(example + 'labra'), URIElement(RDFS_LABEL),
@@ -171,6 +177,10 @@ def test_existing_entity_is_not_created_again(mocked_adapter, triples):
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
 
+def test_is_asio_uri(triples):
+    assert is_asio_uri(triples['desc_asio'].subject)
+    assert not is_asio_uri(triples['desc_asio'].predicate)
+    assert not is_asio_uri(triples['desc_en'].subject)
 
 def test_label_cant_be_inferred(mocked_adapter, triples):
     triple = triples['no_label']
@@ -240,6 +250,16 @@ def test_literal_datatype(mocked_adapter, triples):
                   append_value=[triple.predicate.id])
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls, any_order=False)
+
+def test_mappings_are_created_without_asio(mocked_adapter, triples):
+    triple = triples['desc_en']
+    res = mocked_adapter.create_triple(triple)
+    assert mocked_adapter._add_mappings_to_entity.call_count == 1
+
+def test_mappings_are_not_created_with_asio(mocked_adapter, triples):
+    triple = triples['desc_asio']
+    res = mocked_adapter.create_triple(triple)
+    assert mocked_adapter._add_mappings_to_entity.call_count == 0
 
 def test_modification_result_is_returned(mocked_adapter, triples):
     triple = triples['wditemid']
