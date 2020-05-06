@@ -21,8 +21,9 @@ class DevelopmentConfig(BaseConfig):
 
 class ProductionConfig(BaseConfig):
     ENV = 'production'
+    WBAPI = ''
+    WBSPARQL = ''
 
 class TestingConfig(BaseConfig):
-    DEBUG = False
     TESTING = True
     ENV = 'testing'
