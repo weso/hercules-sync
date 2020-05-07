@@ -11,6 +11,7 @@ app.config['WBAPI'] = 'test/api'
 app.config['WBSPARQL'] = 'test/sparql'
 app.config['WBUSER'] = 'user'
 app.config['WBPASS'] = 'pass'
+app.config['WESOBOT_OAUTH'] = ''
 app.config['WEBHOOK_SECRET'] = ''
 ctx = app.app_context()
 ctx.push()
@@ -36,7 +37,7 @@ def webhook(app):
 
 @mock.patch('hercules_sync.listener._extract_ontology_files')
 @mock.patch('hercules_sync.listener._synchronize_files')
-@mock.patch.object(GitPushEventHandler, '__init__', lambda x, y: None)
+@mock.patch.object(GitPushEventHandler, '__init__', lambda x, y, z: None)
 def test_on_push_valid(mock_synchronize, mock_extract):
     res = on_push({})
     assert res == (200, 'Ok')

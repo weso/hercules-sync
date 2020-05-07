@@ -4,7 +4,7 @@ Each class represents a configuration to use by the flask app
 created in hercules_sync/__init__.py.
 """
 
-from hercules_sync.secret import USERNAME, PASSWORD, SECRET_KEY
+from hercules_sync.secret import USERNAME, PASSWORD, SECRET_KEY, WESOBOT_TOKEN
 
 class BaseConfig():
     DEBUG = False
@@ -12,6 +12,7 @@ class BaseConfig():
     WBUSER = USERNAME
     WBPASS = PASSWORD
     WEBHOOK_SECRET = SECRET_KEY
+    WESOBOT_OAUTH = WESOBOT_TOKEN
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True

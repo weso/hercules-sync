@@ -6,8 +6,6 @@ import urllib3
 
 from unidiff import PatchSet
 
-from .secret import WESOBOT_TOKEN
-
 
 GITHUB_BASE_URL = 'https://github.com'
 GITHUB_API_URL = 'https://api.github.com'
@@ -23,7 +21,7 @@ class GitPushEventHandler():
         Data obtained from a GitHub WebHook regarding a push event.
     """
 
-    def __init__(self, data):
+    def __init__(self, data, oauth=''):
         self.before_commit = data['before']
         self.after_commit = data['after']
         self.repo_name = data['repository']['full_name']
@@ -33,7 +31,8 @@ class GitPushEventHandler():
         self.diff_parser.load_diff()
         self.data_loader = GitDataLoader(self.repo_name,
                                          self.before_commit,
-                                         self.after_commit)
+                                         self.after_commit,
+                                         oauth)
 
     @property
     def added_files(self):
@@ -214,10 +213,11 @@ class GitDataLoader():
     NO_COMMIT_MSG = "No commit found for the ref"
     NOT_FOUND_MSG = "Not Found"
 
-    def __init__(self, repo_name, before_ref, after_ref):
+    def __init__(self, repo_name, before_ref, after_ref, oauth=''):
         self.repo_name = repo_name
         self.before_ref = before_ref
         self.after_ref = after_ref
+        self.oauth = oauth
         self.http = urllib3.PoolManager()
 
     def load_files(self, files_to_load):
@@ -268,7 +268,7 @@ class GitDataLoader():
             url,
             headers={
                 'User-Agent': USER_AGENT,
-                'Authorization': f'token {WESOBOT_TOKEN}'
+                'Authorization': f'token {self.oauth}'
             }
         )
 
