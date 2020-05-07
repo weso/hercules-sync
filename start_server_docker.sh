@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export FLASK_ENV=production
+export FLASK_CONFIG=production
 
 app="ontology_sync"
 docker build -t ${app} .
