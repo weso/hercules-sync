@@ -6,6 +6,8 @@ import urllib3
 
 from unidiff import PatchSet
 
+from .secret import WESOBOT_TOKEN
+
 
 GITHUB_BASE_URL = 'https://github.com'
 GITHUB_API_URL = 'https://api.github.com'
@@ -265,7 +267,8 @@ class GitDataLoader():
             'GET',
             url,
             headers={
-                'User-Agent': USER_AGENT
+                'User-Agent': USER_AGENT,
+                'Authorization': f'token {WESOBOT_TOKEN}'
             }
         )
 

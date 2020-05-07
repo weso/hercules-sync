@@ -11,13 +11,13 @@ app.config['WBAPI'] = 'test/api'
 app.config['WBSPARQL'] = 'test/sparql'
 app.config['WBUSER'] = 'user'
 app.config['WBPASS'] = 'pass'
+app.config['WEBHOOK_SECRET'] = ''
 ctx = app.app_context()
 ctx.push()
 
 from hercules_sync.git import GitFile, GitPushEventHandler
-from hercules_sync.listener import on_push, _extract_ontology_files, _synchronize_files
+from hercules_sync.listener import on_push, _extract_ontology_files, _filter_asio_files, _synchronize_files
 from hercules_sync.webhook import WebHook
-
 
 @pytest.fixture
 def mocked_req():
@@ -37,11 +37,10 @@ def webhook(app):
 @mock.patch('hercules_sync.listener._extract_ontology_files')
 @mock.patch('hercules_sync.listener._synchronize_files')
 @mock.patch.object(GitPushEventHandler, '__init__', lambda x, y: None)
-def test_on_push_valid(mock_extract, mock_synchronize):
+def test_on_push_valid(mock_synchronize, mock_extract):
     res = on_push({})
     assert res == (200, 'Ok')
     mock_extract.assert_called_once()
-    mock_synchronize.assert_called_once()
 
 def test_on_push_invalid():
     with pytest.raises(werkzeug.exceptions.NotFound):
@@ -62,6 +61,8 @@ def test_extract_files():
     handler.modified_files = []
     assert _extract_ontology_files(handler, 'ttl') == handler.removed_files + [handler.added_files[0]]
     assert _extract_ontology_files(handler, 'txt') == [handler.added_files[1]]
+
+    assert _extract_ontology_files(handler, 'ttl', _filter_asio_files) == []
 
 @mock.patch('hercules_sync.triplestore.WikibaseAdapter')
 @mock.patch('hercules_sync.triplestore.WikibaseAdapter.__init__', return_value=None)
