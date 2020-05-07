@@ -19,6 +19,7 @@ typed-ast==1.4.1
 ontospy==1.9.8.3
 unidiff==0.5.5
 urllib3==1.25.8
+waitress==1.4.3
 Werkzeug==0.16.1
 wikidataintegrator==0.6.0
 wrapt==1.11.2

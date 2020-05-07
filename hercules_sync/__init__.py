@@ -27,7 +27,6 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     config_name = os.getenv('FLASK_CONFIG', 'base')
     app.config.from_object(CONFIG[config_name])
-    app.config.from_pyfile('config.cfg')
     with app.app_context():
         from .listener import WEBHOOK
     return app
