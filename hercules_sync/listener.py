@@ -4,32 +4,43 @@ from typing import List
 
 from flask import current_app as app
 from flask import abort
+from flask_executor import Executor
 
 from .git import GitFile, GitPushEventHandler
 from .synchronization import GraphDiffSyncAlgorithm, OntologySynchronizer
 from .triplestore import WikibaseAdapter
 from .webhook import WebHook
 
+EXECUTOR = Executor(app)
 LOGGER = logging.getLogger(__name__)
-WEBHOOK = WebHook(app, endpoint='/postreceive', key=app.config['SECRET_KEY'])
+WEBHOOK = WebHook(app, endpoint='/postreceive', key=app.config['WEBHOOK_SECRET'])
 
 @WEBHOOK.hook()
 def on_push(data):
     try:
         LOGGER.info("Got push with: %s", data)
         git_handler = GitPushEventHandler(data)
-        ontology_files = _extract_ontology_files(git_handler, file_format='ttl')
-        _synchronize_files(ontology_files)
-    except:
+        ontology_files = _extract_ontology_files(git_handler, 'ttl', _filter_asio_files)
+        LOGGER.info("Modified files: %s", ontology_files)
+    except Exception as excpt:
+        LOGGER.error("There was an error processing the request: %s", excpt)
         abort(404)
+
+    if len(ontology_files) > 0:
+        EXECUTOR.submit(_synchronize_files, ontology_files)
     return 200, 'Ok'
 
-def _extract_ontology_files(git_handler: GitPushEventHandler, file_format: str) -> List[GitFile]:
+def _extract_ontology_files(git_handler: GitPushEventHandler, file_format: str,
+                            custom_filter=None) -> List[GitFile]:
+    LOGGER.info("Extracting ontology files modified from push...")
     all_files = list(git_handler.removed_files) + list(git_handler.added_files) + \
         list(git_handler.modified_files)
+    if custom_filter:
+        return custom_filter(all_files)
     return list(filter(lambda x: x._patched_file.path.endswith(f".{file_format}"), all_files))
 
 def _synchronize_files(files: List[GitFile]):
+    LOGGER.info("Synchronizing files...")
     algorithm = GraphDiffSyncAlgorithm()
     adapter = WikibaseAdapter(app.config['WBAPI'], app.config['WBSPARQL'],
                               app.config['WBUSER'], app.config['WBPASS'])
@@ -40,3 +51,6 @@ def _synchronize_files(files: List[GitFile]):
             res = op.execute(adapter)
             if not res.successful:
                 LOGGER.warning("Error synchronizing triple: %s", res.message)
+
+def _filter_asio_files(all_files: List[GitFile]) -> List[GitFile]:
+    return list(filter(lambda x: "current/asio.ttl" in x._patched_file.path, all_files))
