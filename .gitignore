@@ -16,8 +16,7 @@ docs/sphinx/build
 coverage.xml
 run_codecov.sh
 
-# notebook secrets
-notebooks/secret.py
+secret.py
 
 # notebook checkpoints
 .ipynb_checkpoints
