@@ -37,8 +37,9 @@ class OntologySynchronizer():
             with the triplestore.
         """
         ops = self._algorithm.do_algorithm(file)
-        self._annotate_triples(ops, file)
-        return ops
+        filtered_ops = _filter_invalid_ops(ops)
+        self._annotate_triples(filtered_ops, file)
+        return filtered_ops
 
     def _annotate_triples(self, ops: List[SyncOperation], file: GitFile):
         source_model = ontospy.Ontospy(data=file.source_content, rdf_format='ttl')
@@ -82,3 +83,8 @@ def _extract_uris_from(ops: List[SyncOperation]) -> List[URIElement]:
     return [el for op in ops
             for el in op._triple_info
             if el.is_uri]
+
+def _filter_invalid_ops(ops: List[SyncOperation]) -> List[SyncOperation]:
+    return list(filter(lambda op: op._triple_info.subject is not None and
+                                  op._triple_info.predicate is not None and
+                                  op._triple_info.object is not None, ops))
