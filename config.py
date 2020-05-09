@@ -4,27 +4,32 @@ Each class represents a configuration to use by the flask app
 created in hercules_sync/__init__.py.
 """
 
-from hercules_sync.secret import USERNAME, PASSWORD, SECRET_KEY, WESOBOT_TOKEN
+import os
+
+from hercules_sync.util.error import InvalidConfigError
+
+def _try_get_config_from_env(config_key):
+    if config_key not in os.environ:
+        raise InvalidConfigError(f"{config_key} environment variable is not set.")
+    return os.environ[config_key]
 
 class BaseConfig():
     DEBUG = False
     TESTING = False
-    WBUSER = USERNAME
-    WBPASS = PASSWORD
-    WEBHOOK_SECRET = SECRET_KEY
-    WESOBOT_OAUTH = WESOBOT_TOKEN
+    GITHUB_OAUTH = _try_get_config_from_env('GITHUB_OAUTH')
+    WBAPI = _try_get_config_from_env('WBAPI')
+    WBSPARQL = _try_get_config_from_env('WBSPARQL')
+    WBUSER = _try_get_config_from_env('WBUSER')
+    WBPASS = _try_get_config_from_env('WBPASS')
+    WEBHOOK_SECRET = _try_get_config_from_env('SECRET_KEY')
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
     TESTING = True
     ENV = 'development'
-    WBAPI = 'http://156.35.94.149:8181/w/api.php'
-    WBSPARQL = 'http://156.35.94.149:8282/proxy/wdqs/bigdata/namespace/wdq/sparql'
 
 class ProductionConfig(BaseConfig):
     ENV = 'production'
-    WBAPI = ''
-    WBSPARQL = ''
 
 class TestingConfig(BaseConfig):
     TESTING = True
