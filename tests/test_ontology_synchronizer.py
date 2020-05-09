@@ -5,7 +5,9 @@ import ontospy
 from unittest import mock
 
 from hercules_sync.synchronization import OntologySynchronizer, GraphDiffSyncAlgorithm, \
-                                          NaiveSyncAlgorithm
+                                          NaiveSyncAlgorithm, AdditionOperation, RemovalOperation
+from hercules_sync.synchronization.ontology_synchronizer import _filter_invalid_ops
+from hercules_sync.triplestore import LiteralElement, URIElement
 from hercules_sync.util.uri_constants import OWL_BASE
 
 from .common import load_gitfile_from
@@ -45,6 +47,14 @@ def test_init():
 
     synchronizer = OntologySynchronizer(GraphDiffSyncAlgorithm())
     assert isinstance(synchronizer._algorithm, GraphDiffSyncAlgorithm)
+
+def test_filter_invalid_ops():
+    ops = [AdditionOperation(LiteralElement("a"), URIElement("https://example.org"), None),
+           RemovalOperation(LiteralElement("b"), None, LiteralElement("c")),
+           AdditionOperation(LiteralElement("a"), URIElement("https://example.org"), LiteralElement(2))]
+    filtered_ops = _filter_invalid_ops(ops)
+    assert len(filtered_ops) == 1
+    assert filtered_ops[0] == ops[2]
 
 def test_synchronize(mock_synchronizer):
     mock_synchronizer.synchronize(None)

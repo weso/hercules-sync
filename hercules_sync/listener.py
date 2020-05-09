@@ -19,11 +19,11 @@ WEBHOOK = WebHook(app, endpoint='/postreceive', key=app.config['WEBHOOK_SECRET']
 def on_push(data):
     try:
         LOGGER.info("Got push with: %s", data)
-        git_handler = GitPushEventHandler(data, app.config['WESOBOT_OAUTH'])
+        git_handler = GitPushEventHandler(data, app.config['GITHUB_OAUTH'])
         ontology_files = _extract_ontology_files(git_handler, 'ttl', _filter_asio_files)
         LOGGER.info("Modified files: %s", ontology_files)
     except Exception as excpt:
-        LOGGER.error("There was an error processing the request: %s", excpt)
+        LOGGER.exception("There was an error processing the request.")
         abort(404)
 
     if len(ontology_files) > 0:
@@ -51,6 +51,7 @@ def _synchronize_files(files: List[GitFile]):
             res = op.execute(adapter)
             if not res.successful:
                 LOGGER.warning("Error synchronizing triple: %s", res.message)
+    LOGGER.info("Synchronization finished.")
 
 def _filter_asio_files(all_files: List[GitFile]) -> List[GitFile]:
     return list(filter(lambda x: "current/asio.ttl" in x._patched_file.path, all_files))

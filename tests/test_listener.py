@@ -7,11 +7,11 @@ import werkzeug
 from flask import Flask
 
 app = Flask(__name__)
+app.config['GITHUB_OAUTH'] = ''
 app.config['WBAPI'] = 'test/api'
 app.config['WBSPARQL'] = 'test/sparql'
 app.config['WBUSER'] = 'user'
 app.config['WBPASS'] = 'pass'
-app.config['WESOBOT_OAUTH'] = ''
 app.config['WEBHOOK_SECRET'] = ''
 ctx = app.app_context()
 ctx.push()
