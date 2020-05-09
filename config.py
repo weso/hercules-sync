@@ -21,7 +21,7 @@ class BaseConfig():
     WBSPARQL = _try_get_config_from_env('WBSPARQL')
     WBUSER = _try_get_config_from_env('WBUSER')
     WBPASS = _try_get_config_from_env('WBPASS')
-    WEBHOOK_SECRET = _try_get_config_from_env('SECRET_KEY')
+    WEBHOOK_SECRET = _try_get_config_from_env('WEBHOOK_SECRET')
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
