@@ -6,7 +6,7 @@ from flask import current_app as app
 from flask import abort
 from flask_executor import Executor
 
-from .git import GitFile, GitPushEventHandler
+from .git import GitFile, GitPushEventHandler, DiffNotFoundError
 from .synchronization import GraphDiffSyncAlgorithm, OntologySynchronizer
 from .triplestore import WikibaseAdapter
 from .webhook import WebHook
@@ -22,6 +22,9 @@ def on_push(data):
         git_handler = GitPushEventHandler(data, app.config['GITHUB_OAUTH'])
         ontology_files = _extract_ontology_files(git_handler, 'ttl', _filter_asio_files)
         LOGGER.info("Modified files: %s", ontology_files)
+    except DiffNotFoundError:
+        LOGGER.ingo("There was no diff to synchronize.")
+        return 200, 'No diff'
     except Exception as excpt:
         LOGGER.exception("There was an error processing the request.")
         abort(404)
