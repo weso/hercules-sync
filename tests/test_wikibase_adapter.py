@@ -338,7 +338,7 @@ def test_proptype(mocked_adapter, triples):
     login = mocked_adapter._local_login
     write_calls = [
         mock.call(login, entity_type='property', property_datatype='wikibase-property'),
-        mock.call(login)
+        mock.call(login, entity_type='property')
     ]
     writer.write.assert_has_calls(write_calls, any_order=False)
 

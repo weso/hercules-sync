@@ -183,21 +183,21 @@ class WikibaseAdapter(TripleStoreManager):
         logging.debug("Changing alias @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_aliases([objct.content], lang)
-        return self._try_write(entity)
+        return self._try_write(entity, entity_type=subject.etype)
 
     def _set_label(self, subject, objct) -> ModificationResult:
         lang = get_lang_from_literal(objct)
         logging.debug("Changing label @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_label(objct.content, lang)
-        return self._try_write(entity)
+        return self._try_write(entity, entity_type=subject.etype)
 
     def _set_description(self, subject, objct) -> ModificationResult:
         lang = get_lang_from_literal(objct)
         logging.debug("Setting description @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_description(objct.content[:MAX_CHARACTERS_DESC], lang)
-        return self._try_write(entity)
+        return self._try_write(entity, entity_type=subject.etype)
 
     def _remove_alias(self, subject, objct) -> ModificationResult:
         lang = get_lang_from_literal(objct)
@@ -212,7 +212,7 @@ class WikibaseAdapter(TripleStoreManager):
             err_msg = f"Error removing alias {objct.content}@{lang}."
             return ModificationResult(successful=False, message=err_msg)
         entity.set_aliases(curr_aliases, lang, append=False)
-        return self._try_write(entity)
+        return self._try_write(entity, entity_type=subject.etype)
 
 
     def _remove_label(self, subject, objct) -> ModificationResult:
@@ -220,14 +220,14 @@ class WikibaseAdapter(TripleStoreManager):
         logging.debug("Removing label @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_label("", lang)
-        return self._try_write(entity)
+        return self._try_write(entity, entity_type=subject.etype)
 
     def _remove_description(self, subject, objct) -> ModificationResult:
         lang = get_lang_from_literal(objct)
         logging.debug("Removing description @%s of %s", lang, subject)
         entity = self._local_item_engine(subject.id)
         entity.set_description("", lang)
-        return self._try_write(entity)
+        return self._try_write(entity, entity_type=subject.etype)
 
     def _try_write(self, entity, **kwargs) -> ModificationResult:
         try:
