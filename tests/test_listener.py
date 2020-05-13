@@ -16,7 +16,7 @@ app.config['WEBHOOK_SECRET'] = ''
 ctx = app.app_context()
 ctx.push()
 
-from hercules_sync.git import GitFile, GitPushEventHandler
+from hercules_sync.git import GitFile, GitPushEventHandler, DiffNotFoundError
 from hercules_sync.listener import on_push, _extract_ontology_files, _filter_asio_files, _synchronize_files
 from hercules_sync.webhook import WebHook
 
@@ -31,6 +31,9 @@ def mocked_req():
         req.data = b'{"ref": "head", "before": "001", "after": "002"}'
         yield req
 
+def raise_diff_not_found():
+    raise DiffNotFoundError()
+
 @pytest.fixture
 def webhook(app):
     return WebHook(app, endpoint='/postreceive', key='abc')
@@ -42,6 +45,13 @@ def test_on_push_valid(mock_synchronize, mock_extract):
     res = on_push({})
     assert res == (200, 'Ok')
     mock_extract.assert_called_once()
+
+@mock.patch('hercules_sync.listener._extract_ontology_files')
+@mock.patch('hercules_sync.listener._synchronize_files')
+@mock.patch.object(GitPushEventHandler, '__init__', lambda x, y, z: raise_diff_not_found())
+def test_on_push_diff_not_found(mock_synchronize, mock_extract):
+    res = on_push({})
+    assert res == (200, 'No diff')
 
 def test_on_push_invalid():
     with pytest.raises(werkzeug.exceptions.NotFound):

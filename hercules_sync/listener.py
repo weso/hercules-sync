@@ -23,7 +23,7 @@ def on_push(data):
         ontology_files = _extract_ontology_files(git_handler, 'ttl', _filter_asio_files)
         LOGGER.info("Modified files: %s", ontology_files)
     except DiffNotFoundError:
-        LOGGER.ingo("There was no diff to synchronize.")
+        LOGGER.info("There was no diff to synchronize.")
         return 200, 'No diff'
     except Exception as excpt:
         LOGGER.exception("There was an error processing the request.")
