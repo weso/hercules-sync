@@ -14,7 +14,12 @@
 #
 import os
 import sys
+herc_sync_path = os.path.join(os.path.abspath('..'), 'hercules_sync')
 sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../hercules_sync/synchronization'))
+sys.path.insert(0, os.path.abspath('../hercules_sync/triplestore'))
+sys.path.insert(0, os.path.abspath('../hercules_sync/external'))
+sys.path.insert(0, os.path.abspath('../hercules_sync/util'))
 sys.path.insert(1, os.path.abspath('..'))
 
 import sphinx_rtd_theme
