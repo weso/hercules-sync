@@ -179,7 +179,7 @@ The main coding standard that was followed was the [PEP 8](https://www.python.or
 
 In order to document the code there are also several formatting styles that can be used. In our case, we opted to use the [numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html) due to the readability it provides when compared to other alternatives.
 
-### Other dependencies
+### Other dependencies
 Additional dependencies of the project are stored in the [requirements.txt file](https://github.com/HerculesCRUE/ib-hercules-sync/blob/master/requirements.txt) from the herc\_sync repository.
 
 ## Design Decisions
@@ -369,7 +369,7 @@ In this annex we will detail how to launch the synchronization system locally wi
 
 #### Defining a webhook in the source repo
 In order to perform the synchronization automatically, a webhook must be created in the original repository where the ontology is stored. This webhook will be launched whenever a new push event occurs in the repo, and the synchronization service will be called to sync the changes with the wikibase instance. When creating a new webhook, the payload url must point to the URL where this server will be available. It is also important to define a secret key that will be used to accept only requests from the source repo and not from other ones. An example configuration will look like this one:
-![](docs/images/webhook_example.png)
+![](./images/webhook_example.png)
 
 ### Launching the app with Docker
 In order to execute the app you need to set the following configuration in the docker-compose.yml file:
