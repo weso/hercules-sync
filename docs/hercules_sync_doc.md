@@ -279,18 +279,18 @@ After the design phase was concluded, these are some statistics about the number
 
 The tests were distributed along the following modules:
 
-| Module      | Number of tests       |
-|:------------|:---------------------:|
-| Algorithms  | 3  |
-| Git Wrapper | 12 |
-| Listener    | 5 |
-| Mappings    | 7 |
-| Ontology Synchronizer | 5 |
-| Operations  | 5 |
-| Triple Info | 14 |
-| Triplestore Manager | 1 |
-| Webhook | 8 |
-| Wikibase Adapter | 27 |
+| Module      | Description | Number of tests       |
+|:------------| :---------- |:---------------------:|
+| Algorithms  | Tests regarding the different sync algorithms used to obtain the difference between two ontology files. | 3  |
+| Git Wrapper | Tests of the tools used to extract the diff between two commits from the WebHook information received. | 12 |
+| Listener    | Test the response of the main endpoint given different requests as input. | 5 |
+| Mappings    | Tests the mapping between ontology resources and Python datatypes. | 7 |
+| Ontology Synchronizer | Test the use of algorithms and extraction of sync operations from them. | 5 |
+| Operations  | Test the execution of sync operations received from a sync algorithm. | 5 |
+| Triple Info | Test the representation of a triple in the hercules_sync system. | 14 |
+| Triplestore Manager | Test the base interface that each specific adapter to the triple store must implement. | 1 |
+| Webhook | Test the reception of data from a Webhook | 8 |
+| Wikibase Adapter | Test the adapter that synchronizes triples to a Wikibase. | 27 |
 
 ## Requirements analysis
 ### Functional requirements
