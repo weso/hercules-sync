@@ -45,3 +45,19 @@ In order to execute the app you need to set the following configuration in the d
 * WBUSER: Username of the user that will perform the synchronization operation in the target wikibase.
 * WBPASS: Password of the user defined by the username stated above.
 * WEBHOOK_SECRET: Secret key of the webhook created in the previous step.
+
+## Launching the app directly with Python
+This application is compatible with Python 3.6 forwards, but the recommended Python version is at least Python 3.7 due to performance. After you have installed Python, you can run the following command to install every dependency:
+```
+pip install -r requirements.txt
+```
+
+After the requirements have been installed, you need to set directly the environment variables described in the previous section. After that, the following command can be executed to launch the app:
+```
+python wsgi.py
+```
+
+Alternatively, there is a sh script available that installs the dependencies and runs the server automatically. In order to execute this script, you have to set the environment variables and then run:
+```
+sh start_server.sh
+```
