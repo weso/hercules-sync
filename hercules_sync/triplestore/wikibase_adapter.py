@@ -2,13 +2,17 @@ import json
 import logging
 import requests
 
+from typing import Union
+
 from wikidataintegrator import wdi_core, wdi_login
 
 from . import TripleInfo, TripleStoreManager, ModificationResult, \
-              TripleElement, URIElement
+              TripleElement, URIElement, AnonymousElement
 from ..external.uri_factory_mock import URIFactory
 from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SCHEMA_NAME, \
               SCHEMA_DESCRIPTION, SKOS_ALTLABEL, SKOS_PREFLABEL
+
+NonLiteralElement = Union[URIElement, AnonymousElement]
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +74,7 @@ class WikibaseAdapter(TripleStoreManager):
         if self.is_wb_alias(predicate):
             return self._set_alias(subject, objct)
 
-        if isinstance(objct, URIElement):
+        if isinstance(objct, URIElement) or isinstance(objct, AnonymousElement):
             objct.id = self._get_wb_id_of(objct, objct.wdi_proptype)
 
         predicate.etype = 'property'
@@ -128,7 +132,7 @@ class WikibaseAdapter(TripleStoreManager):
         same_as = wdi_core.WDUrl(value=uri, prop_nr=self._mappings_prop)
         entity.update([same_as], append_value=[self._mappings_prop])
 
-    def _create_new_wb_item(self, uriref: URIElement, proptype: str) -> ModificationResult:
+    def _create_new_wb_item(self, uriref: NonLiteralElement, proptype: str) -> ModificationResult:
         entity = self._local_item_engine(new_item=True)
         label = try_infer_label_from(uriref)
         if label is None:
@@ -164,7 +168,7 @@ class WikibaseAdapter(TripleStoreManager):
             logger.info("Mappings property has been created: %s", mappings_prop_id)
         return mappings_prop_id
 
-    def _get_wb_id_of(self, uriref: URIElement, proptype: str):
+    def _get_wb_id_of(self, uriref: NonLiteralElement, proptype: str):
         wb_uri = get_uri_for(uriref.uri)
         if wb_uri is not None:
             logging.debug("Id of %s in wikibase: %s", uriref, wb_uri)
@@ -267,7 +271,7 @@ def get_lang_from_literal(objct):
         return DEFAULT_LANG
     return objct.lang
 
-def is_asio_uri(uriref: URIElement) -> bool:
+def is_asio_uri(uriref: NonLiteralElement) -> bool:
     return '/hercules/asio' in uriref.uri
 
 def post_uri(label, uri):
@@ -275,7 +279,7 @@ def post_uri(label, uri):
     uri_factory = URIFactory()
     return uri_factory.post_uri(label, uri)
 
-def try_infer_label_from(uriref: URIElement):
+def try_infer_label_from(uriref: NonLiteralElement):
     if '#' in uriref:
         return uriref.uri.split('#')[-1]
     elif '/' in uriref:
