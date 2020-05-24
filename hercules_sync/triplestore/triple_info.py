@@ -3,7 +3,7 @@ import logging
 from abc import abstractmethod, ABC
 from typing import Type, Union
 
-from rdflib.term import Literal, URIRef
+from rdflib.term import BNode, Literal, URIRef
 from wikidataintegrator.wdi_core import WDBaseDataType, WDItemID, WDMonolingualText, \
                                         WDProperty, WDString
 
@@ -76,6 +76,7 @@ class AnonymousElement(TripleElement):
     def __init__(self, uid: str, prefix: str = ASIO_BASE):
         self.uid = uid
         self.prefix = prefix
+        self.etype = 'item'
         self.id = None
 
     @property
@@ -94,11 +95,21 @@ class AnonymousElement(TripleElement):
         """
         return self.wdi_class.DTYPE
 
+    @property
+    def wdi_proptype(self) -> str:
+        return None
+
     def to_wdi_datatype(self, **kwargs) -> WDItemID:
         return self.wdi_class(value=self.id, **kwargs)
 
     def is_blank(self):
         return True
+
+    def __eq__(self, val):
+        return self.uri == val
+
+    def __iter__(self):
+        return self.uri.__iter__()
 
     def __str__(self):
         return f"AnonymousElement: {self.uri}"
