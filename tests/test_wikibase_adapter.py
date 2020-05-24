@@ -9,7 +9,7 @@ from wikidataintegrator import wdi_core
 
 from hercules_sync.external.uri_factory_mock import URIFactory
 from hercules_sync.triplestore import URIElement, LiteralElement, ModificationResult, \
-                                      TripleInfo, WikibaseAdapter
+                                      TripleInfo, WikibaseAdapter, AnonymousElement
 from hercules_sync.triplestore.wikibase_adapter import DEFAULT_LANG, MAPPINGS_PROP_DESC, \
                                                        MAPPINGS_PROP_LABEL, is_asio_uri
 from hercules_sync.util.uri_constants import ASIO_BASE, GEO_BASE, RDFS_LABEL, RDFS_COMMENT, \
@@ -99,6 +99,8 @@ def triples():
                               LiteralElement('individuo', lang='es')),
         'alias_es_2': TripleInfo(URIElement(example + 'Person'), URIElement(SKOS_ALTLABEL),
                               LiteralElement('sujeto', lang='es')),
+        'anonymous_element': TripleInfo(URIElement(example + 'test', etype='property', proptype=f"{ASIO_BASE}property"),
+                              URIElement(example + 'livesIn'), AnonymousElement('cb013')),
         'desc_en': TripleInfo(URIElement(example + 'Person'), URIElement(RDFS_COMMENT),
                               LiteralElement('A person', lang='en')),
         'desc_es': TripleInfo(URIElement(example + 'Person'), URIElement(RDFS_COMMENT),
@@ -160,6 +162,22 @@ def test_alternative_label_uris(mocked_adapter, triples):
         mock.call('라브라', 'ko')
     ]
     writer.set_label.assert_has_calls(set_label_calls, any_order=False)
+
+def test_anonymous_element(mocked_adapter, triples):
+    triple = triples['anonymous_element']
+    mocked_adapter.create_triple(triple)
+    item_engine_calls = [
+        # subject
+        mock.call(new_item=True),
+        # object
+        mock.call(new_item=True),
+        # predicate
+        mock.call(new_item=True),
+        # statement
+        mock.call('P1', data=[triple.object.to_wdi_datatype(prop_nr=triple.predicate.id)],
+                  append_value=[triple.predicate.id])
+    ]
+    mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
 
 def test_create_triple(mocked_adapter, triples):
     new_triple = triples['wditemid']

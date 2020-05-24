@@ -46,7 +46,7 @@ In order to execute the app you need to set the following configuration in the d
 * WBPASS: Password of the user defined by the username stated above.
 * WEBHOOK_SECRET: Secret key of the webhook created in the previous step.
 
-## Launching the app directly with Python
+## Launching the app directly with Python
 This application is compatible with Python 3.6 forwards, but the recommended Python version is at least Python 3.7 due to performance. After you have installed Python, you can run the following command to install every dependency:
 ```
 pip install -r requirements.txt

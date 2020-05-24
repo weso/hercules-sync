@@ -3,13 +3,14 @@ import logging
 from abc import abstractmethod, ABC
 from typing import Type, Union
 
-from rdflib.term import Literal, URIRef
+from rdflib.term import BNode, Literal, URIRef
 from wikidataintegrator.wdi_core import WDBaseDataType, WDItemID, WDMonolingualText, \
                                         WDProperty, WDString
 
 
 from ..util.error import InvalidArgumentError
 from ..util.mappings import datatype2wdidtype, datatype2wdiobject
+from ..util.uri_constants import ASIO_BASE
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,8 @@ class TripleElement(ABC):
         elif elmnt_type == Literal:
             res = LiteralElement(rdflib_element.value, rdflib_element.datatype,
                                  rdflib_element.language)
+        elif elmnt_type == BNode:
+            res = AnonymousElement(str(rdflib_element))
         return res
 
     @abstractmethod
@@ -55,6 +58,61 @@ class TripleElement(ABC):
 
     def is_uri(self):
         return False
+
+    def is_blank(self):
+        return False
+
+    def is_literal(self):
+        return False
+
+class AnonymousElement(TripleElement):
+    """ TripleElement class that represents blank nodes from a triple.
+
+    Parameters
+    ----------
+    uid : str
+        Generated uid of the element.
+    """
+    def __init__(self, uid: str, prefix: str = ASIO_BASE):
+        self.uid = uid
+        self.prefix = prefix
+        self.etype = 'item'
+        self.id = None
+
+    @property
+    def uri(self) -> str:
+        return f"{self.prefix}/genid/{self.uid}"
+
+    @property
+    def wdi_class(self) -> Type[WDItemID]:
+        """ Returns the wikidataintegrator class of the element.
+        """
+        return WDItemID
+
+    @property
+    def wdi_dtype(self) -> str:
+        """ Returns the wikidataintegrator DTYPE of this element.
+        """
+        return self.wdi_class.DTYPE
+
+    @property
+    def wdi_proptype(self) -> str:
+        return None
+
+    def to_wdi_datatype(self, **kwargs) -> WDItemID:
+        return self.wdi_class(value=self.id, **kwargs)
+
+    def is_blank(self):
+        return True
+
+    def __eq__(self, val):
+        return self.uri == val
+
+    def __iter__(self):
+        return self.uri.__iter__()
+
+    def __str__(self):
+        return f"AnonymousElement: {self.uri}"
 
 class URIElement(TripleElement):
     """ TripleElement class that represents URIs from a triple.
@@ -183,6 +241,9 @@ class LiteralElement(TripleElement):
             return self._datatype_to_wdiobject(**kwargs)
         else:
             return self.wdi_class(value=self.content, **kwargs)
+
+    def is_literal(self):
+        return True
 
     def _datatype_to_wdiobject(self, **kwargs) -> WDBaseDataType:
         if str(self.datatype) not in datatype2wdiobject:

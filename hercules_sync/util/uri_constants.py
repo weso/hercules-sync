@@ -1,4 +1,4 @@
-ASIO_BASE = 'http://www.asio.es/asioontologies/asio#'
+ASIO_BASE = 'http://purl.org/hercules/asio/core#'
 
 RDFS_BASE = 'http://www.w3.org/2000/01/rdf-schema#'
 RDFS_LABEL = f'{RDFS_BASE}label'
