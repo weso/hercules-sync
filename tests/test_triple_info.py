@@ -75,19 +75,28 @@ def test_from_rdflib(rdflib_triple):
     assert triple[2].datatype is None
     assert triple[2].lang is None
 
+    assert triple != str(rdflib_triple)
+
     bnode = TripleElement.from_rdflib(BNode('cb0'))
     assert isinstance(bnode, AnonymousElement)
     assert bnode.uid == 'cb0'
+    assert bnode == f'{ASIO_BASE}/genid/cb0'
 
 def test_is_blank(string_literal, item_uri, anonymous_element):
     assert not string_literal.is_blank()
     assert not item_uri.is_blank()
     assert anonymous_element.is_blank()
 
+def test_is_literal(string_literal, item_uri, anonymous_element):
+    assert string_literal.is_literal()
+    assert not item_uri.is_literal()
+    assert not anonymous_element.is_literal()
+
 def test_is_uri(string_literal, item_uri, anonymous_element):
     assert not string_literal.is_uri()
     assert not anonymous_element.is_uri()
     assert item_uri.is_uri()
+
 
 def test_literal_init():
     lit_a = LiteralElement("hello")
@@ -123,6 +132,12 @@ def test_literal_wdi_dtype(string_literal, monolingual_literal, datatype_literal
     assert string_literal.wdi_dtype == WDString.DTYPE
     assert monolingual_literal.wdi_dtype == WDMonolingualText.DTYPE
     assert datatype_literal.wdi_dtype == WDQuantity.DTYPE
+
+def test_literal_wdi_datatype(string_literal, monolingual_literal, datatype_literal):
+    assert monolingual_literal.to_wdi_datatype(prop_nr=1) == monolingual_literal.wdi_class(value=monolingual_literal.content,
+        language=monolingual_literal.lang, prop_nr=1)
+    unkown_datatype = LiteralElement("12", datatype="invented")
+    assert unkown_datatype.to_wdi_datatype(prop_nr=1) == WDString(value=unkown_datatype.content, prop_nr=1)
 
 def test_literal_equals(string_literal, monolingual_literal, datatype_literal):
     assert 'test' != string_literal
