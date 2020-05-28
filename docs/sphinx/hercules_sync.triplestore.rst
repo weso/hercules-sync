@@ -11,7 +11,6 @@ hercules\_sync.triplestore.triple\_info module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 hercules\_sync.triplestore.triplestore\_manager module
 ------------------------------------------------------
@@ -20,7 +19,6 @@ hercules\_sync.triplestore.triplestore\_manager module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 hercules\_sync.triplestore.wikibase\_adapter module
 ---------------------------------------------------
@@ -29,7 +27,6 @@ hercules\_sync.triplestore.wikibase\_adapter module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 
 Module contents
@@ -39,4 +36,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
