@@ -11,7 +11,6 @@ hercules\_sync.synchronization.algorithms module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 hercules\_sync.synchronization.ontology\_synchronizer module
 ------------------------------------------------------------
@@ -20,7 +19,6 @@ hercules\_sync.synchronization.ontology\_synchronizer module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 hercules\_sync.synchronization.operations module
 ------------------------------------------------
@@ -29,7 +27,6 @@ hercules\_sync.synchronization.operations module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 
 Module contents
@@ -39,4 +36,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

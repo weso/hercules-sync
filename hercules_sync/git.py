@@ -101,7 +101,7 @@ class GitFile():
 
     @property
     def added_lines(self):
-        """
+        """ Return the list of added lines from the file
 
         Returns
         -------
@@ -115,7 +115,7 @@ class GitFile():
 
     @property
     def removed_lines(self):
-        """
+        """ Return the list of removed lines from the file
 
         Returns
         -------

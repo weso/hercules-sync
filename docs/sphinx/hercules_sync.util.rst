@@ -11,7 +11,6 @@ hercules\_sync.util.error module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 hercules\_sync.util.mappings module
 -----------------------------------
@@ -20,7 +19,6 @@ hercules\_sync.util.mappings module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 hercules\_sync.util.uri\_constants module
 -----------------------------------------
@@ -29,7 +27,6 @@ hercules\_sync.util.uri\_constants module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 
 Module contents
@@ -39,4 +36,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

@@ -1,6 +1,16 @@
 hercules\_sync package
 ======================
 
+Subpackages
+-----------
+
+.. toctree::
+
+   hercules_sync.external
+   hercules_sync.synchronization
+   hercules_sync.triplestore
+   hercules_sync.util
+
 Submodules
 ----------
 
