@@ -114,6 +114,7 @@ class AnonymousElement(TripleElement):
     def __str__(self):
         return f"AnonymousElement: {self.uri}"
 
+
 class URIElement(TripleElement):
     """ TripleElement class that represents URIs from a triple.
 

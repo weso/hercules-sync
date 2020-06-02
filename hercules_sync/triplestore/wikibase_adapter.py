@@ -2,12 +2,12 @@ import json
 import logging
 import requests
 
-from typing import Union
+from typing import List, Union
 
 from wikidataintegrator import wdi_core, wdi_login
 
 from . import TripleInfo, TripleStoreManager, ModificationResult, \
-              TripleElement, URIElement, AnonymousElement
+              TripleElement, URIElement, AnonymousElement, LiteralElement
 from ..external.uri_factory_mock import URIFactory
 from ..util.uri_constants import RDFS_LABEL, RDFS_COMMENT, SCHEMA_NAME, \
               SCHEMA_DESCRIPTION, SKOS_ALTLABEL, SKOS_PREFLABEL
@@ -48,10 +48,7 @@ class WikibaseAdapter(TripleStoreManager):
             wikibase_item_engine_factory(mediawiki_api_url, sparql_endpoint_url)
         self._local_login = wdi_login.WDLogin(username, password, mediawiki_api_url)
         self._mappings_prop = self._get_or_create_mappings_prop()
-        self._create_callbacks = dict('onAlias'=self._set_alias, 'onDesc'=self._set_description,
-                                      'onLabel'=self._set_label, 'onStatement'=self._create_statement)
-        self._remove_callbacks = dict('onAlias'=self._remove_alias, 'onDesc'=self._remove_description,
-                                      'onLabel'=self._remove_label, 'onStatement'=self._renmove_statement)
+        self._init_callbacks()
 
     def batch_update(self, subject: TripleElement, triples: List[TripleInfo]) -> ModificationResult:
         """ Update a set of triples with a given subject in a single transaction
@@ -77,7 +74,7 @@ class WikibaseAdapter(TripleStoreManager):
             update_callbacks = self._create_callbacks if triple.isAdded else self._remove_callbacks
             self._update_entity(entity, predicate, objct, update_callbacks)
         return self._try_write(entity, entity_type=subject.etype,
-                               property_datatype=subject.wdi_dtype)
+                               property_datatype=subject.wdi_proptype)
 
     def create_triple(self, triple_info: TripleInfo) -> ModificationResult:
         """ Creates the given triple in the wikibase instance.
@@ -98,7 +95,7 @@ class WikibaseAdapter(TripleStoreManager):
         entity = self._local_item_engine(subject.id)
         self._update_entity(entity, predicate, objct, self._create_callbacks)
         return self._try_write(entity, entity_type=subject.etype,
-                               property_datatype=subject.wdi_dtype)
+                               property_datatype=subject.wdi_proptype)
 
     def remove_triple(self, triple_info: TripleInfo) -> ModificationResult:
         """ Removes the given triple from the wikibase instance.
@@ -119,14 +116,14 @@ class WikibaseAdapter(TripleStoreManager):
         entity = self._local_item_engine(subject.id)
         self._update_entity(entity, predicate, objct, self._remove_callbacks)
         return self._try_write(entity, entity_type=subject.etype,
-                               property_datatype=subject.wdi_dtype)
+                               property_datatype=subject.wdi_proptype)
 
     def _add_mappings_to_entity(self, entity: wdi_core.WDItemEngine, uri: str):
         same_as = wdi_core.WDUrl(value=uri, prop_nr=self._mappings_prop)
         entity.update([same_as], append_value=[self._mappings_prop])
 
     def _create_new_wb_item(self, uriref: NonLiteralElement,
-                            proptype: str) -> wdi_core.WDItemEngine:
+                            proptype: str) -> ModificationResult:
         entity = self._local_item_engine(new_item=True)
         label = try_infer_label_from(uriref)
         if label is None:
@@ -183,27 +180,34 @@ class WikibaseAdapter(TripleStoreManager):
         post_uri(uriref.uri, entity_id)
         return entity_id
 
+    def _init_callbacks(self):
+        self._create_callbacks = dict(onAlias=self._set_alias, onDesc=self._set_description,
+                                      onLabel=self._set_label, onStatement=self._create_statement)
+        self._remove_callbacks = dict(onAlias=self._remove_alias, onDesc=self._remove_description,
+                                      onLabel=self._remove_label, onStatement=self._remove_statement)
+
+
     def _remove_alias(self, entity: wdi_core.WDItemEngine, objct: LiteralElement) -> wdi_core.WDItemEngine:
         lang = get_lang_from_literal(objct)
-        logging.debug("Removing alias @%s of %s", lang, subject)
+        logging.debug("Removing alias @%s of %s", lang, entity)
         curr_aliases = entity.get_aliases(lang)
         try:
             curr_aliases.remove(objct.content)
             entity.set_aliases(curr_aliases, lang, append=False)
         except ValueError:
             logging.warning("Alias %s@%s does not exist for object %s. Skipping removal...",
-                            objct.content, lang, subject.id)
+                            objct.content, lang, entity.wd_item_id)
         return entity
 
     def _remove_description(self, entity: wdi_core.WDItemEngine, objct: LiteralElement) -> wdi_core.WDItemEngine:
         lang = get_lang_from_literal(objct)
-        logging.debug("Removing description @%s of %s", lang, subject)
+        logging.debug("Removing description @%s of %s", lang, entity)
         entity.set_description("", lang)
         return entity
 
     def _remove_label(self, entity: wdi_core.WDItemEngine, objct: LiteralElement) -> wdi_core.WDItemEngine:
         lang = get_lang_from_literal(objct)
-        logging.debug("Removing label @%s of %s", lang, subject)
+        logging.debug("Removing label @%s of %s", lang, entity)
         entity.set_label("", lang)
         return entity
 
@@ -216,19 +220,19 @@ class WikibaseAdapter(TripleStoreManager):
 
     def _set_alias(self, entity: wdi_core.WDItemEngine, objct: LiteralElement) -> wdi_core.WDItemEngine:
         lang = get_lang_from_literal(objct)
-        logging.debug("Changing alias @%s of %s", lang, subject)
+        logging.debug("Changing alias @%s of %s", lang, entity)
         entity.set_aliases([objct.content], lang)
         return entity
 
     def _set_description(self, entity: wdi_core.WDItemEngine, objct: LiteralElement) -> wdi_core.WDItemEngine:
         lang = get_lang_from_literal(objct)
-        logging.debug("Setting description @%s of %s", lang, subject)
+        logging.debug("Setting description @%s of %s", lang, entity)
         entity.set_description(objct.content[:MAX_CHARACTERS_DESC], lang)
         return entity
 
     def _set_label(self, entity: wdi_core.WDItemEngine, objct: LiteralElement) -> wdi_core.WDItemEngine:
         lang = get_lang_from_literal(objct)
-        logging.debug("Changing label @%s of %s", lang, subject)
+        logging.debug("Changing label @%s of %s", lang, entity)
         entity.set_label(objct.content, lang)
         return entity
 

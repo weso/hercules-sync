@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from typing import List
 
-from ..triplestore import ModificationResult, TripleStoreManager, TripleElement, TripleInfo
+from ..triplestore import ModificationResult, TripleStoreManager, \
+                          TripleElement, TripleInfo
+
 
 class SyncOperation(ABC):
     @abstractmethod
@@ -19,6 +22,7 @@ class SyncOperation(ABC):
             Result given by the TripleStoreManager after the modification.
 
         """
+
 
 class BasicSyncOperation(SyncOperation):
     """ Base class of all the basic synchronization operations.
@@ -52,6 +56,7 @@ class AdditionOperation(BasicSyncOperation):
 
         return self._triple_info == other._triple_info
 
+
 class RemovalOperation(BasicSyncOperation):
     def execute(self, triple_store: TripleStoreManager) -> ModificationResult:
         return triple_store.remove_triple(self._triple_info)
@@ -65,11 +70,12 @@ class RemovalOperation(BasicSyncOperation):
 
         return self._triple_info == other._triple_info
 
+
 class BatchOperation(SyncOperation):
     """
     """
 
-    def __init__(subject: TripleElement, triples: List[TripleInfo]):
+    def __init__(self, subject: TripleElement, triples: List[TripleInfo]):
         self.subject = subject
         self.triples = triples
 
@@ -78,10 +84,11 @@ class BatchOperation(SyncOperation):
 
     def __str__(self):
         res = [f"BatchOperation: {self.subject}"]
-        for triple in triples:
+        for triple in self.triples:
             res.append('\n')
             res.append(str(triple))
         return ''.join(res)
+
 
 def optimize_ops(ops: List[BasicSyncOperation]):
     """
@@ -89,7 +96,7 @@ def optimize_ops(ops: List[BasicSyncOperation]):
     subject_to_triples = defaultdict(list)
     for op in ops:
         triple_info = op._triple_info
-        res_ops[triple_info.subject].append(triple_info)
+        subject_to_triples[triple_info.subject].append(triple_info)
 
     return [BatchOperation(subject, triples)
             for subject, triples in subject_to_triples.items()]

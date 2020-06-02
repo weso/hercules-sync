@@ -48,6 +48,7 @@ def reset_state(id_generator):
 def mocked_adapter(id_generator):
     with mock.patch.object(WikibaseAdapter, '__init__', lambda slf, a, b, c, d: None):
         adapter = WikibaseAdapter('', '', '', '')
+        adapter._init_callbacks()
         writer_mock = mock.MagicMock()
         writer_mock.write = mock.MagicMock(side_effect=id_generator.generate_id)
         writer_mock.update = mock.MagicMock()
@@ -169,25 +170,26 @@ def test_anonymous_element(mocked_adapter, triples):
     item_engine_calls = [
         # subject
         mock.call(new_item=True),
+        mock.call('P1'),
         # object
         mock.call(new_item=True),
         # predicate
         mock.call(new_item=True),
-        # statement
-        mock.call('P1', data=[triple.object.to_wdi_datatype(prop_nr=triple.predicate.id)],
-                  append_value=[triple.predicate.id])
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
+
+    writer = mocked_adapter._local_item_engine(None)
+    assert mock.call(data=[triple.object.to_wdi_datatype(prop_nr=triple.predicate.id)],
+                     append_value=[triple.predicate.id]) in writer.update.mock_calls
 
 def test_create_triple(mocked_adapter, triples):
     new_triple = triples['wditemid']
     mocked_adapter.create_triple(new_triple)
     item_engine_calls = [
         mock.call(new_item=True),
+        mock.call('Q1'),
         mock.call(new_item=True),
-        mock.call(new_item=True),
-        mock.call('Q1', data=[new_triple.object.to_wdi_datatype(prop_nr=new_triple.predicate.id)],
-                  append_value=[new_triple.predicate.id])
+        mock.call(new_item=True)
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls, any_order=False)
 
@@ -204,9 +206,11 @@ def test_create_triple(mocked_adapter, triples):
         mock.call(login, entity_type='item', property_datatype=None),
         mock.call(login, entity_type='item', property_datatype=None),
         mock.call(login, entity_type='property', property_datatype='wikibase-item'),
-        mock.call(login, entity_type='item', property_datatype='wikibase-item')
+        mock.call(login, entity_type='item', property_datatype=None)
     ]
     writer.write.assert_has_calls(write_calls, any_order=False)
+    assert mock.call(data=[new_triple.object.to_wdi_datatype(prop_nr=new_triple.predicate.id)],
+                     append_value=[new_triple.predicate.id]) in writer.update.mock_calls
 
 @mock.patch('requests.get', side_effect=mocked_requests_prop_existing)
 def test_get_or_create_mappings_existing(mock_get, mocked_adapter, triples):
@@ -226,20 +230,23 @@ def test_existing_entity_is_not_created_again(mocked_adapter, triples):
     item_engine_calls = [
         # subject from triple_a
         mock.call(new_item=True),
+        mock.call('Q1'),
         # object from triple_a
         mock.call(new_item=True),
         # predicate from triple_a
         mock.call(new_item=True),
-        # statement from triple_a
-        mock.call('Q1', data=[triple_a.object.to_wdi_datatype(prop_nr=triple_a.predicate.id)],
-                  append_value=[triple_a.predicate.id]),
+        # subject from triple_b
+        mock.call('Q1'),
         # predicate from triple_b
-        mock.call(new_item=True),
-        # statement from triple_b
-        mock.call('Q1', data=[triple_b.object.to_wdi_datatype(prop_nr=triple_b.predicate.id)],
-                  append_value=[triple_b.predicate.id])
+        mock.call(new_item=True)
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls)
+
+    writer = mocked_adapter._local_item_engine(None)
+    assert mock.call(data=[triple_a.object.to_wdi_datatype(prop_nr=triple_a.predicate.id)],
+                     append_value=[triple_a.predicate.id]) in writer.update.mock_calls
+    assert mock.call(data=[triple_b.object.to_wdi_datatype(prop_nr=triple_b.predicate.id)],
+                     append_value=[triple_b.predicate.id]) in writer.update.mock_calls
 
 @mock.patch('wikidataintegrator.wdi_core.WDItemEngine.wikibase_item_engine_factory', side_effect=None)
 @mock.patch('wikidataintegrator.wdi_login.WDLogin', side_effect=None)
@@ -324,11 +331,16 @@ def test_literal_datatype(mocked_adapter, triples):
     mocked_adapter.create_triple(triple)
     item_engine_calls = [
         mock.call(new_item=True),
-        mock.call(new_item=True),
-        mock.call('Q1', data=[triple.object.to_wdi_datatype(prop_nr=triple.predicate.id)],
-                  append_value=[triple.predicate.id])
+        mock.call('Q1'),
+        mock.call(new_item=True)
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls, any_order=False)
+
+    writer = mocked_adapter._local_item_engine(None)
+    update_call = mock.call(data=[triple.object.to_wdi_datatype(prop_nr=triple.predicate.id)],
+                            append_value=[triple.predicate.id])
+    assert update_call in writer.update.mock_calls
+    assert writer.update.call_count == 3  # 2 mappings + delete statement
 
 def test_mappings_are_created_without_asio(mocked_adapter, triples):
     triple = triples['desc_en']
@@ -356,7 +368,7 @@ def test_proptype(mocked_adapter, triples):
     login = mocked_adapter._local_login
     write_calls = [
         mock.call(login, entity_type='property', property_datatype='wikibase-property'),
-        mock.call(login, entity_type='property')
+        mock.call(login, entity_type='property', property_datatype='wikibase-property')
     ]
     writer.write.assert_has_calls(write_calls, any_order=False)
 
@@ -366,22 +378,20 @@ def test_remove_triple(mocked_adapter, triples):
     item_engine_calls = [
         # create subject
         mock.call(new_item=True),
+        # fetch subject
+        mock.call('Q1'),
+        # create object
+        mock.call(new_item=True),
         # create predicate
         mock.call(new_item=True),
-        # remove statement
-        mock.call('Q1', data=[wdi_core.WDBaseDataType.delete_statement('P2')])
     ]
     mocked_adapter._local_item_engine.assert_has_calls(item_engine_calls, any_order=False)
-    assert mocked_adapter._local_item_engine.call_count == 3
+    assert mocked_adapter._local_item_engine.call_count == 4
 
     writer = mocked_adapter._local_item_engine(None)
-    login = mocked_adapter._local_login
-    write_calls = [
-        mock.call(login, entity_type='item', property_datatype=None),
-        mock.call(login, entity_type='property', property_datatype='wikibase-item'),
-        mock.call(login, entity_type='item', property_datatype='wikibase-item')
-    ]
-    writer.write.assert_has_calls(write_calls, any_order=False)
+    update_call = mock.call(data=[wdi_core.WDBaseDataType.delete_statement('P3')])
+    assert update_call in writer.update.mock_calls
+    assert writer.update.call_count == 4 # 3 mappings + delete statement
 
 def test_remove_alias(mocked_adapter, triples):
     alias_es = triples['alias_es']
