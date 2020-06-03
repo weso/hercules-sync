@@ -3,6 +3,7 @@ from unittest import mock
 import pytest
 
 from hercules_sync.synchronization import AdditionOperation, BatchOperation, RemovalOperation
+from hercules_sync.synchronization.operations import optimize_ops
 from hercules_sync.triplestore import LiteralElement, TripleInfo, URIElement
 from hercules_sync.util.uri_constants import RDFS_LABEL
 
@@ -53,6 +54,16 @@ def test_removal(mock_triplestore, triple):
     removal_op = RemovalOperation(*triple)
     removal_op.execute(mock_triplestore)
     mock_triplestore.remove_triple.assert_called_once_with(TripleInfo(*triple))
+
+
+def test_optimize_ops(triple):
+    triple_b = (URIElement('http://example.org/onto#Singer'), URIElement(RDFS_LABEL),
+                LiteralElement('Cantante', 'es'))
+    original_ops = [AdditionOperation(*triple), AdditionOperation(*triple_b), RemovalOperation(*triple)]
+    result_ops = optimize_ops(original_ops)
+    assert len(result_ops) == 2
+    for op in result_ops:
+        assert isinstance(op, BatchOperation)
 
 
 def test_two_operations_with_same_triple_are_distinct(triple):

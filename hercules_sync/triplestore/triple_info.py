@@ -191,11 +191,15 @@ class URIElement(TripleElement):
     def __eq__(self, val):
         return self.uri == val
 
+    def __hash__(self):
+        return hash(self.uri)
+
     def __iter__(self):
         return self.uri.__iter__()
 
     def __str__(self):
         return f"URIElement: {self.uri} - Type: {self.etype}"
+
 
 class LiteralElement(TripleElement):
     """ TripleElement class that represents a literal from a triple.
