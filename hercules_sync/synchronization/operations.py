@@ -37,13 +37,17 @@ class BasicSyncOperation(SyncOperation):
         Object of the triple to be synchronized.
     """
     def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement):
-        self._triple_info = TripleInfo(sub, pred, obj)
+        pass
 
     def __str__(self):
         return f"{self._triple_info.subject} - {self._triple_info.predicate} " \
                + f"- {self._triple_info.object}"
 
+
 class AdditionOperation(BasicSyncOperation):
+    def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement):
+        self._triple_info = TripleInfo(sub, pred, obj, isAdded=True)
+
     def execute(self, triple_store: TripleStoreManager) -> ModificationResult:
         return triple_store.create_triple(self._triple_info)
 
@@ -58,6 +62,9 @@ class AdditionOperation(BasicSyncOperation):
 
 
 class RemovalOperation(BasicSyncOperation):
+    def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement):
+        self._triple_info = TripleInfo(sub, pred, obj, isAdded=False)
+
     def execute(self, triple_store: TripleStoreManager) -> ModificationResult:
         return triple_store.remove_triple(self._triple_info)
 
@@ -72,7 +79,14 @@ class RemovalOperation(BasicSyncOperation):
 
 
 class BatchOperation(SyncOperation):
-    """
+    """ Synchronization operation that performs a batch update on the triplestore
+
+    Parameters
+    ----------
+    sub : TripleElement
+        Common subject of the triples that will be updated.
+    triples : list of TripleInfo
+        List of triples to be updated at once with the batch update.
     """
 
     def __init__(self, subject: TripleElement, triples: List[TripleInfo]):
@@ -90,8 +104,18 @@ class BatchOperation(SyncOperation):
         return ''.join(res)
 
 
-def optimize_ops(ops: List[BasicSyncOperation]):
-    """
+def optimize_ops(ops: List[BasicSyncOperation]) -> List[BatchOperation]:
+    """ Convert a list of basic operations into a list of batch operations.
+
+    Parameters
+    ----------
+    ops: list of BasicSyncOperation
+        Input basic operations to be converted.
+
+    Returns
+    -------
+    list of BatchOperations
+        Final list of batch operations to be executed.
     """
     subject_to_triples = defaultdict(list)
     for op in ops:

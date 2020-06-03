@@ -146,7 +146,7 @@ class WikibaseAdapter(TripleStoreManager):
 
     def _get_or_create_mappings_prop(self):
         mappings_prop_id = None
-        query_res = json.loads(requests.get(f"{self.api_url}?action=wbsearchentities" + \
+        query_res = json.loads(requests.get(f"{self.api_url}?action=wbsearchentities" +
             f"&search={MAPPINGS_PROP_LABEL}&format=json&language=en&type=property").text)
         if 'search' in query_res and len(query_res['search']) > 0:
             for search_result in query_res['search']:
@@ -185,7 +185,6 @@ class WikibaseAdapter(TripleStoreManager):
                                       onLabel=self._set_label, onStatement=self._create_statement)
         self._remove_callbacks = dict(onAlias=self._remove_alias, onDesc=self._remove_description,
                                       onLabel=self._remove_label, onStatement=self._remove_statement)
-
 
     def _remove_alias(self, entity: wdi_core.WDItemEngine, objct: LiteralElement) -> wdi_core.WDItemEngine:
         lang = get_lang_from_literal(objct)

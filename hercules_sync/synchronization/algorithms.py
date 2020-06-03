@@ -9,6 +9,7 @@ from hercules_sync.git import GitFile
 from hercules_sync.triplestore import TripleInfo
 from . import AdditionOperation, RemovalOperation, SyncOperation
 
+
 class BaseSyncAlgorithm(ABC):
     """ Base class for all synchronization algorithms.
     """
@@ -29,9 +30,11 @@ class BaseSyncAlgorithm(ABC):
             with the triplestore.
         """
 
+
 class NaiveSyncAlgorithm(BaseSyncAlgorithm):
     def do_algorithm(self, file: GitFile) -> List[SyncOperation]:
         raise NotImplementedError("NaiveSync algorithm has not been implemented yet.")
+
 
 class GraphDiffSyncAlgorithm(BaseSyncAlgorithm):
     """ Implementation of the Graph diff algorithm to synchronize ontology sources.
@@ -55,6 +58,7 @@ class GraphDiffSyncAlgorithm(BaseSyncAlgorithm):
     def _create_remove_ops_from(self, graph: Graph) -> List[RemovalOperation]:
         return [RemovalOperation(*TripleInfo.from_rdflib(triple).content)
                 for triple in graph]
+
 
 class RDFSyncAlgorithm(BaseSyncAlgorithm):
     """ Implementation of the RDFSync algorithm to synchronize ontology sources.
