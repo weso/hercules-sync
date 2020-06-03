@@ -114,6 +114,7 @@ class AnonymousElement(TripleElement):
     def __str__(self):
         return f"AnonymousElement: {self.uri}"
 
+
 class URIElement(TripleElement):
     """ TripleElement class that represents URIs from a triple.
 
@@ -190,11 +191,15 @@ class URIElement(TripleElement):
     def __eq__(self, val):
         return self.uri == val
 
+    def __hash__(self):
+        return hash(self.uri)
+
     def __iter__(self):
         return self.uri.__iter__()
 
     def __str__(self):
         return f"URIElement: {self.uri} - Type: {self.etype}"
+
 
 class LiteralElement(TripleElement):
     """ TripleElement class that represents a literal from a triple.
@@ -265,6 +270,7 @@ class LiteralElement(TripleElement):
             res.append(f" - DataType: {self.datatype}")
         return ''.join(res)
 
+
 class TripleInfo():
     """ Encapsulate the elements of a semantic triple.
 
@@ -278,17 +284,19 @@ class TripleInfo():
         Object of the triple.
     """
 
-    def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement):
+    def __init__(self, sub: TripleElement, pred: TripleElement, obj: TripleElement,
+                 isAdded=True):
         self.subject = sub
         self.predicate = pred
         self.object = obj
+        self.isAdded = isAdded
 
     @classmethod
-    def from_rdflib(cls, rdflib_triple):
+    def from_rdflib(cls, rdflib_triple, isAdded=True):
         subject = TripleElement.from_rdflib(rdflib_triple[0])
         predicate = TripleElement.from_rdflib(rdflib_triple[1])
         objct = TripleElement.from_rdflib(rdflib_triple[2])
-        return TripleInfo(subject, predicate, objct)
+        return TripleInfo(subject, predicate, objct, isAdded)
 
     @property
     def content(self):
@@ -306,7 +314,7 @@ class TripleInfo():
             return False
 
         return self.subject == other.subject and self.predicate == other.predicate \
-               and self.object == other.object
+            and self.object == other.object
 
     def __iter__(self):
         return self.content.__iter__()
