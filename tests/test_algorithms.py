@@ -1,10 +1,7 @@
-import os
-
 import pytest
 
 from rdflib.namespace import XSD
 
-from hercules_sync.git import GitFile
 from hercules_sync.synchronization import AdditionOperation, RemovalOperation, \
                                           GraphDiffSyncAlgorithm, NaiveSyncAlgorithm, \
                                           RDFSyncAlgorithm
@@ -20,9 +17,11 @@ TARGET_FILE = 'target.ttl'
 ASIO_PREFIX = 'http://www.asio.es/asioontologies/asio#'
 EX_PREFIX = 'http://www.semanticweb.org/spitxa/ontologies/2020/1/asio-human-resource#'
 
+
 @pytest.fixture(scope='module')
 def input():
     return load_gitfile_from(SOURCE_FILE, TARGET_FILE)
+
 
 class TestNaiveSyncAlgorithm:
     @pytest.fixture(scope='class')
@@ -34,6 +33,7 @@ class TestNaiveSyncAlgorithm:
             algorithm.do_algorithm(input)
         assert 'has not been implemented yet' in str(excpt.value)
 
+
 class TestRDFSyncAlgorithm:
     @pytest.fixture(scope='class')
     def algorithm(self):
@@ -43,6 +43,7 @@ class TestRDFSyncAlgorithm:
         with pytest.raises(NotImplementedError) as excpt:
             algorithm.do_algorithm(input)
         assert 'has not been implemented yet' in str(excpt.value)
+
 
 class TestGraphSyncAlgorithm:
     @pytest.fixture(scope='class')
@@ -111,6 +112,16 @@ class TestGraphSyncAlgorithm:
 
         assert len(operations) == len(expected)
         _assert_lists_have_same_elements(expected, operations)
+
+        for op in operations:
+            triple = op._triple_info
+            if isinstance(op, AdditionOperation):
+                assert triple.isAdded
+            elif isinstance(op, RemovalOperation):
+                assert not triple.isAdded
+            else:
+                assert False, "Invalid operation type detected"
+
 
 def _assert_lists_have_same_elements(expected, result):
     for el in result:
