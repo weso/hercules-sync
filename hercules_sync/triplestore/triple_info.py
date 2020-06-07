@@ -253,6 +253,7 @@ class LiteralElement(TripleElement):
     def _datatype_to_wdiobject(self, **kwargs) -> WDBaseDataType:
         if str(self.datatype) not in datatype2wdiobject:
             logger.warning("Datatype %s is not supported, defaulting to string...", self.datatype)
+            self.content = "" if self.content is None else self.content
             return WDString(value=self.content, **kwargs)
         return datatype2wdiobject[str(self.datatype)](self.content, **kwargs)
 

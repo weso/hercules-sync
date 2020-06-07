@@ -20,3 +20,9 @@ secret.py
 
 # notebook checkpoints
 .ipynb_checkpoints
+
+# editor
+.vscode
+
+# Berlin sparql benchmarks tool
+bsbmtools-0.2
