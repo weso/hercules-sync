@@ -23,3 +23,6 @@ secret.py
 
 # editor
 .vscode
+
+# Berlin sparql benchmarks tool
+bsbmtools-0.2
