@@ -1,10 +1,9 @@
-@triplestore
 Feature: Change the underlying triplestore
-  As an ontology engineer,
-  I want to find information online,
-  So I can learn new things and get tasks done.
+  As a developer,
+  I want to be able to change the underlying triplestore to be synchronized
+  So operations can be executed on multiple triplestore.
 
-    Scenario: Addition of new triples
-        Given a
-        When b
-        Then c
+    Scenario: Use of new triplestore
+        Given the creation of a new triplestore adapter
+        When the triplestore is selected as the one to be synchronized
+        Then the synchronization operations are executed on the new triplestore
