@@ -1,0 +1,2 @@
+#class MockTripleStoreAdapter(BaseAdapter):
+#    pass

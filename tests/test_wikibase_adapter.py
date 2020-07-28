@@ -15,52 +15,10 @@ from hercules_sync.util.uri_constants import ASIO_BASE, GEO_BASE, RDFS_LABEL, RD
                                              SKOS_ALTLABEL, SCHEMA_NAME, SCHEMA_DESCRIPTION, \
                                              SKOS_PREFLABEL
 
-FACTORY = URIFactory()
-
-
-class IDGenerator():
-    def __init__(self):
-        self.curr_id = 0
-
-    def generate_id(self, _, **kwargs):
-        try:
-            etype = kwargs['entity_type']
-            self.curr_id += 1
-            str_id = str(self.curr_id)
-            return 'Q' + str_id if etype == 'item' else 'P' + str_id
-        except KeyError:
-            pass
-
 
 class FakeRequestsResponse():
     def __init__(self, text):
         self.text = text
-
-
-@pytest.fixture()
-def id_generator():
-    return IDGenerator()
-
-
-@pytest.fixture(autouse=True)
-def reset_state(id_generator):
-    id_generator.curr_id = 0
-    FACTORY.reset_factory()
-
-
-@pytest.fixture
-def mocked_adapter(id_generator):
-    with mock.patch.object(WikibaseAdapter, '__init__', lambda slf, a, b, c, d: None):
-        adapter = WikibaseAdapter('', '', '', '')
-        adapter._init_callbacks()
-        writer_mock = mock.MagicMock()
-        writer_mock.write = mock.MagicMock(side_effect=id_generator.generate_id)
-        writer_mock.update = mock.MagicMock()
-        adapter._local_item_engine = mock.MagicMock(return_value=writer_mock)
-        adapter._local_login = mock.MagicMock()
-        adapter._mappings_prop = mock.MagicMock()
-        yield adapter
-
 
 def mocked_requests_prop_existing(_):
     text = json.dumps({
