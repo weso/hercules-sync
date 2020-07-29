@@ -1,6 +1,8 @@
 jupyterlab==2.1.4
 matplotlib==3.2.1
 paramiko==2.7.1
+pytest
+pytest-bdd
 snakeviz==2.1.0
 Sphinx==2.4.3
 stsci-rtd-theme==0.0.2
