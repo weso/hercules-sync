@@ -3,7 +3,7 @@ from typing import List
 from hercules_sync.git import GitFile
 from . import BaseSyncAlgorithm, NaiveSyncAlgorithm, SyncOperation
 from ..triplestore import URIElement
-from ..util.uri_constants import ASIO_BASE
+from ..util.uri_constants import ASIO_BASE, XSD_BASE
 
 import ontospy
 
@@ -57,6 +57,9 @@ def _annotate_datatype_props(all_urielements, source_model, target_model):
             if urielement == str(prop.uri):
                 if len(prop.ranges) > 0:
                     urielement.proptype = str(prop.ranges[0].uri)
+                else:
+                    # default type for datatype properties without range
+                    urielement.proptype = f'{XSD_BASE}string'
 
 def _annotate_object_props(all_urielements: List[URIElement], source_model, target_model):
     object_properties = source_model.all_properties_object + target_model.all_properties_object
