@@ -23,3 +23,5 @@ ex:projectKeyword rdf:type owl:DatatypeProperty ;
 
 ex:projectFund rdf:type owl:DatatypeProperty ;
                rdfs:range xsd:integer .
+
+ex:isbn rdf:type owl:DatatypeProperty .

@@ -1,3 +1,4 @@
+import pdb
 import pytest
 
 import ontospy
@@ -78,12 +79,14 @@ def test_etype_annotation(input):
 
 def test_prop_range_annotation(input_range):
     algorithm = GraphDiffSyncAlgorithm()
+    input_range.target_content = ""
     ops = algorithm.do_algorithm(input_range)
     synchronizer = OntologySynchronizer(algorithm)
     synchronizer._annotate_triples(ops, input_range)
     expected = {
         f"{EX_PREFIX}authors": 'wikibase-item',
         f"{EX_PREFIX}fund": 'wikibase-item',
+        f"{EX_PREFIX}isbn": 'string',
         f"{EX_PREFIX}projectEndDate": 'time',
         f"{EX_PREFIX}projectKeyword": 'string',
         f"{EX_PREFIX}projectFund": 'quantity',
