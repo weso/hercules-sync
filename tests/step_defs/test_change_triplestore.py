@@ -4,7 +4,7 @@ import pdb
 from pytest_bdd import scenarios, given, when, then
 from unittest import mock
 
-from hercules_sync.synchronization import AdditionOperation, RemovalOperation
+from wbsync.synchronization import AdditionOperation, RemovalOperation
 
 
 scenarios('../features/change_triplestore.feature')

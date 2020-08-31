@@ -5,9 +5,9 @@ from pytest_bdd import scenarios, given, when, then
 from unittest import mock
 
 from hercules_sync.git import GitFile
-from hercules_sync.synchronization import GraphDiffSyncAlgorithm, OntologySynchronizer, \
+from wbsync.synchronization import GraphDiffSyncAlgorithm, OntologySynchronizer, \
                                           AdditionOperation, RemovalOperation
-from hercules_sync.triplestore import WikibaseAdapter
+from wbsync.triplestore import WikibaseAdapter
 
 
 DATA_DIR = os.path.join(os.path.join('tests', 'data'), 'synchronization')
@@ -78,7 +78,7 @@ def _assert_wb_called(adapter):
 def _perform_sync(gitfile, mocked_adapter):
     algorithm = GraphDiffSyncAlgorithm()
     synchronizer = OntologySynchronizer(algorithm)
-    ops = synchronizer.synchronize(gitfile)
+    ops = synchronizer.synchronize(gitfile.source_content, gitfile.target_content)
     for op in ops:
         res = op.execute(mocked_adapter)
     return ops

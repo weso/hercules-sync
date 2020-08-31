@@ -75,10 +75,10 @@ def test_extract_files():
 
     assert _extract_ontology_files(handler, 'ttl', _filter_asio_files) == []
 
-@mock.patch('hercules_sync.triplestore.WikibaseAdapter')
-@mock.patch('hercules_sync.triplestore.WikibaseAdapter.__init__', return_value=None)
-@mock.patch('hercules_sync.synchronization.GraphDiffSyncAlgorithm')
-@mock.patch('hercules_sync.synchronization.OntologySynchronizer')
+@mock.patch('wbsync.triplestore.WikibaseAdapter')
+@mock.patch('wbsync.triplestore.WikibaseAdapter.__init__', return_value=None)
+@mock.patch('wbsync.synchronization.GraphDiffSyncAlgorithm')
+@mock.patch('wbsync.synchronization.OntologySynchronizer')
 def test_synchronize(mocked_os, mocked_gds, mocked_wb_init, mocked_wb):
     _synchronize_files([GitFile(mock.MagicMock(), "", "")])
     mocked_wb_init.assert_called_once_with(app.config['WBAPI'], app.config['WBSPARQL'],
