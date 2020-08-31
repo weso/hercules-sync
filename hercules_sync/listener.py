@@ -7,8 +7,8 @@ from flask import abort
 from flask_executor import Executor
 
 from .git import GitFile, GitPushEventHandler, DiffNotFoundError
-from .synchronization import GraphDiffSyncAlgorithm, OntologySynchronizer
-from .triplestore import WikibaseAdapter
+from wbsync.synchronization import GraphDiffSyncAlgorithm, OntologySynchronizer
+from wbsync.triplestore import WikibaseAdapter
 from .webhook import WebHook
 
 EXECUTOR = Executor(app)
@@ -49,7 +49,7 @@ def _synchronize_files(files: List[GitFile]):
                               app.config['WBUSER'], app.config['WBPASS'])
     for file in files:
         synchronizer = OntologySynchronizer(algorithm)
-        ops = synchronizer.synchronize(file)
+        ops = synchronizer.synchronize(file.source_content, file.target_content)
         for op in ops:
             res = op.execute(adapter)
             if not res.successful:

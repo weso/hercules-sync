@@ -3,8 +3,8 @@ from unittest import mock
 import pytest
 from wikidataintegrator import wdi_core
 
-from hercules_sync.external.uri_factory_mock import URIFactory
-from hercules_sync.triplestore import WikibaseAdapter
+from wbsync.external.uri_factory_mock import URIFactory
+from wbsync.triplestore import WikibaseAdapter
 
 
 FACTORY = URIFactory()

@@ -18,9 +18,12 @@ stsci-rtd-theme==0.0.2
 tqdm==4.42.1
 typed-ast==1.4.1
 ontospy==1.9.8.3
+rdflib==5.0.0
+requests==2.23.0
 unidiff==0.5.5
 urllib3==1.25.8
 waitress==1.4.3
+wbsync
 Werkzeug==0.16.1
 wikidataintegrator==0.6.0
 wrapt==1.11.2
