@@ -4,7 +4,7 @@
 
 ## Configuración del entorno
 
-Ver documento [README](https://github.com/HerculesCRUE/ib-asio-docs-/blob/master/common/testing/testing.md) para la configuración de los tests.
+Ver documento [README](https://github.com/HerculesCRUE/ib-asio-docs-/blob/master/hito_2/testing/testing.md) para la configuración de los tests.
 
 ## Escenarios
 
