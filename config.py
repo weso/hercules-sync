@@ -6,7 +6,7 @@ created in hercules_sync/__init__.py.
 
 import os
 
-from hercules_sync.util.error import InvalidConfigError
+from wbsync.util.error import InvalidConfigError
 
 def _try_get_config_from_env(config_key):
     if config_key not in os.environ:
