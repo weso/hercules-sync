@@ -11,7 +11,6 @@ logging.basicConfig(level=logging.INFO)
 app = create_app()
 
 
-
 if __name__ == '__main__':
     if app.config['ENV'] == 'production':
         from waitress import serve
@@ -19,33 +18,21 @@ if __name__ == '__main__':
     else:
         app.run(host='0.0.0.0')
 
-    """
-        id = requests.post("http://localhost:9326/canonical-uri?concept=labra&domain=hercules.org&subDomain=um&typeCode=res").content
-        propId = requests.post(
-            "http://localhost:9326/canonical-uri?property=instanceOf&domain=hercules.org&subDomain=um&typeCode=res").content
-        print(id)
+"""
+            import requests
+            import json
 
-    propId = requests.post(
-        "http://localhost:9326/canonical-uri?concept=Paco&domain=hercules.org&subDomain=um&typeCode=res").content
+            criteria = "entity"
+            canonicalParams = {'domain': 'hercules.org', 'lang': 'es-ES', 'subDomain':'um','type':'res'}
+            body = '{"@class": "researcher","canonicalClassName": "researcher" }'
+            canonicalResponse = requests.post("http://localhost:9326/uri-factory/canonical/"+criteria,params=canonicalParams,headers={'Content-type':'application/json', 'Accept':'*/*'},data=body).content
+            canonicalResponseObj = json.loads(canonicalResponse)
+            canonicalUri = canonicalResponseObj["canonicalURI"]
+            canonicalLanguageURI = canonicalResponseObj["canonicalLanguageURI"]
+            language = canonicalResponseObj["language"]
 
-    print(propId)
-    responseObj = json.loads(propId)
-    if (len(responseObj) > 0):
-        print(responseObj["id"])
-    response= requests.get("http://localhost:9326/canonical-uri?concept=labra").content
-    response1 = requests.get("http://localhost:9326/canonical-uri?property=labra").content
-
-    import re
-    name = 'propiedadNueva'
-    name = re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower().replace("_","-")
-
-    response3 = requests.get("http://localhost:9326/canonical-uri?reference="+name).content
-
-    print(response3)
-
-
-        responseObj = json.loads(response)
-        if(len(responseObj)>0):
-            print(responseObj[0]["id"])
-    """
-
+            localParams = {'canonicalLanguageURI': canonicalLanguageURI, 'localURI': 'http://localhost:8181/wiki/Item:Q1', 'storageName': 'wikibase'}
+            localResponse = requests.post("http://localhost:9326/uri-factory/local",params=localParams).content
+            localResponseObj = json.loads(localResponse)
+            print(localResponseObj)
+            """

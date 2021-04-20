@@ -2,16 +2,20 @@ version: '3'
 
 services:
   hercules_sync:
-    image: wesogroup/hercules_sync:v0.1.6
-    network_mode: host
+    image: hercules-sync
+    build:
+      context: .
+      dockerfile: Dockerfile
+
     ports:
      - "5000:5000"
     environment:
       - FLASK_CONFIG=production
       # CONFIG - Change the default values below
-      - GITHUB_OAUTH=oauth_key
-      - WBAPI=wikibase_api_endpoint
-      - WBSPARQL=wikibase_sparql_endpoint
-      - WBUSER=wikibase_username
-      - WBPASS=wikibase_password
-      - WEBHOOK_SECRET=webhook_secret_key
+      - GITHUB_OAUTH=02864d8ea9cdd551f451083e6c208847f6eeae09
+      - WBAPI=http://93.156.8.55:8181/w/api.php
+      - WBSPARQL= http://93.156.8.55:8282/proxy/wdqs/bigdata/namespace/wdq/sparql
+      - WBUSER=WikibaseAdmin
+      - WBPASS=WikibaseDockerAdminPass
+      - WEBHOOK_SECRET=12345
+      - URIS_FACTORY=http://93.156.8.55:9326/
