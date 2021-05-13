@@ -10,6 +10,7 @@ from .git import GitFile, GitPushEventHandler, DiffNotFoundError
 from wbsync.synchronization import GraphDiffSyncAlgorithm, OntologySynchronizer
 from wbsync.triplestore import WikibaseAdapter
 from .webhook import WebHook
+from .uris_factory import HerculesURIsFactory
 
 EXECUTOR = Executor(app)
 LOGGER = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ def on_push(data):
     try:
         LOGGER.info("Got push with: %s", data)
         git_handler = GitPushEventHandler(data, app.config['GITHUB_OAUTH'])
-        ontology_files = _extract_ontology_files(git_handler, 'ttl', _filter_asio_files)
+        ontology_files = _extract_ontology_files(git_handler, 'ttl', None)
         LOGGER.info("Modified files: %s", ontology_files)
     except DiffNotFoundError:
         LOGGER.info("There was no diff to synchronize.")
@@ -46,7 +47,7 @@ def _synchronize_files(files: List[GitFile]):
     LOGGER.info("Synchronizing files...")
     algorithm = GraphDiffSyncAlgorithm()
     adapter = WikibaseAdapter(app.config['WBAPI'], app.config['WBSPARQL'],
-                              app.config['WBUSER'], app.config['WBPASS'])
+                              app.config['WBUSER'], app.config['WBPASS'],factory_of_uris=HerculesURIsFactory())
     for file in files:
         synchronizer = OntologySynchronizer(algorithm)
         ops = synchronizer.synchronize(file.source_content, file.target_content)

@@ -20,3 +20,5 @@ run_codecov.sh
 .vscode
 
 uris.pkl
+
+venv/
