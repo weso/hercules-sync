@@ -21,7 +21,7 @@ ontospy==1.9.8.3
 rdflib==5.0.0
 requests==2.23.0
 unidiff==0.5.5
-urllib3==1.25.8
+urllib3==1.26.5
 waitress==1.4.3
 wbsync
 Werkzeug==0.16.1
