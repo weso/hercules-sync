@@ -1,4 +1,4 @@
-jupyterlab==2.1.4
+jupyterlab==2.2.10
 matplotlib==3.2.1
 paramiko==2.7.1
 pytest
