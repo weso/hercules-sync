@@ -22,7 +22,7 @@ rdflib==5.0.0
 requests==2.23.0
 unidiff==0.5.5
 urllib3==1.25.8
-waitress==1.4.3
+waitress==2.1.1
 wbsync
 Werkzeug==0.16.1
 wikidataintegrator==0.6.0
