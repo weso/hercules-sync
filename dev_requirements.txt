@@ -1,6 +1,6 @@
 jupyterlab==2.1.4
 matplotlib==3.2.1
-paramiko==2.7.1
+paramiko==2.10.1
 pytest
 pytest-bdd
 snakeviz==2.1.0
